@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Dashboard - Central University</title>
+    <link href="lecturer-dashboard.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="lecturer-dashboard.js" defer></script>
+    <link rel="shortcut icon" href="cu-logo.png" type="image/x-icon">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap logo-icon"></i>
+                <span class="logo-text">Central University</span>
+            </div>
+            <div class="nav-items">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div class="user-profile">
+                    <img class="user-avatar" id="userAvatar" src="https://ui-avatars.com/api/?name=Prof+Smith" alt="Profile">
+                    <span class="user-name" id="userName">Loading...</span>
+                </div>
+                <a href="index.html" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Banner -->
+        <section class="welcome-section">
+            <h1 id="welcomeMessage">Welcome back!</h1>
+            <p class="welcome-subtext">Manage your classes and track student attendance.</p>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <button onclick="showGenerateCodeModal()" class="action-btn action-blue">
+                <i class="fas fa-qrcode"></i>
+                Generate Attendance Code
+            </button>
+            <button onclick="downloadAttendanceReport()" class="action-btn action-green">
+                <i class="fas fa-file-export"></i>
+                Download Report
+            </button>
+            <button onclick="viewClassSchedule()" class="action-btn action-purple">
+                <i class="fas fa-calendar"></i>
+                View Schedule
+            </button>
+            <button onclick="viewStudentList()" class="action-btn action-yellow">
+                <i class="fas fa-users"></i>
+                View Students
+            </button>
+        </section>
+
+        <!-- Stats Grid -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <i class="fas fa-users stat-icon stat-blue"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Total Students</span>
+                    <span class="stat-value" id="totalStudents">--</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-calendar-day stat-icon stat-green"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Today's Classes</span>
+                    <span class="stat-value" id="todayClasses">--</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line stat-icon stat-purple"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Average Attendance</span>
+                    <span class="stat-value" id="avgAttendance">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Attendance Overview -->
+        <section class="attendance-section">
+            <div class="section-header">
+                <h2>Today's Attendance Overview</h2>
+                <select id="courseFilter" class="filter-select">
+                    <option value="">All Courses</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Time</th>
+                            <th>Present</th>
+                            <th>Absent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTable">
+                        <!-- Attendance data will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h3 class="modal-title">Class Schedule</h3>
+                <div id="scheduleList" class="schedule-list"></div>
+                <div class="modal-footer">
+                    <button onclick="closeScheduleModal()" class="modal-btn modal-btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h3 class="modal-title">Student List</h3>
+                <select id="courseSelect" class="modal-select">
+                    <option value="">Select Course</option>
+                </select>
+                <div id="studentsList" class="students-list"></div>
+                <div class="modal-footer">
+                    <button onclick="closeStudentsModal()" class="modal-btn modal-btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="generateCodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <h3 class="modal-title">Generate Attendance Code</h3>
+                <div class="modal-form">
+                    <select id="courseSelect" class="modal-select">
+                        <option value="">Select Course</option>
+                    </select>
+                    <div id="codeDisplay" class="code-display">
+                        <div class="code-value" id="attendanceCode"></div>
+                        <p class="code-timer">Code expires in: <span id="codeTimer">5:00</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="generateButton" onclick="generateCode()" class="modal-btn modal-btn-primary">Generate Code</button>
+                    <button onclick="closeGenerateCodeModal()" class="modal-btn modal-btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up</title>
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="signup.css" />
+  <link rel="shortcut icon" href="cu-logo.png" type="image/x-icon">
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get('email');
+      if (email) {
+        const emailInput = document.getElementById('email');
+        emailInput.value = decodeURIComponent(email);
+        
+        // Optional: Trigger checkEmail logic directly
+        document.getElementById('checkEmailBtn').click();
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="signup-box">
+      <h1>Sign up</h1>
+      <p>Create an account or <a href="index.html">Sign in</a></p>
+
+      <label for="email">Email address</label>
+      <input type="email" id="email" placeholder="Enter your email" required />
+
+      <p id="statusMessage" class="status-message"></p>
+
+      <div id="passwordSection" style="display: none;">
+        <label for="password">Create Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Enter a password" />
+          <span class="eye-icon">&#128065;</span>
+        </div>
+        <button class="signup-button" id="createPasswordBtn">Create Password</button>
+      </div>
+
+      <button class="signup-button" id="checkEmailBtn">Check Email</button>
+    </div>
+  </div>
+  <script src="signup.js"></script>
+</body>
+</html>

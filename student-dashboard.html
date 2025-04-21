@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Central University</title>
+    <link href="student-dashboard.css" rel="stylesheet">
+    <script src="student-dashboard.js" defer></script>
+    <link rel="shortcut icon" href="cu-logo.png" type="image/x-icon">
+    
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="cu-logo.png" class="logo-icon" alt="Central University Logo">
+<span class="logo-text">Central University</span>
+            </div>
+            <div class="nav-items">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div class="user-profile">
+                    <img class="user-avatar" id="userAvatar" src="https://ui-avatars.com/api/?name=John+Doe" alt="Profile">
+                    <span class="user-name" id="userName">Loading...</span>
+                </div>
+                <a href="index.html" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <h1 id="welcomeMessage">Welcome back!</h1>
+            <p class="welcome-subtext">Track your attendance and stay updated with your courses.</p>
+        </section>
+
+        <!-- Attendance Form -->
+        <section class="attendance-section">
+            <h2>Mark Attendance</h2>
+            <div class="attendance-form">
+                <input type="text" id="attendanceCode" placeholder="Enter attendance code">
+                <button onclick="markAttendance()" class="submit-btn">
+                    Submit Attendance
+                </button>
+            </div>
+            <p class="form-note">Enter the attendance code provided by your lecturer.</p>
+        </section>
+
+        <!-- Stats Cards -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <i class="fas fa-chart-pie stat-icon"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Attendance Rate</span>
+                    <span class="stat-value" id="attendanceRate">--</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-book stat-icon"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Total Classes</span>
+                    <span class="stat-value" id="totalClasses">--</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Classes Attended</span>
+                    <span class="stat-value" id="classesAttended">--</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-times-circle stat-icon"></i>
+                <div class="stat-info">
+                    <span class="stat-title">Classes Missed</span>
+                    <span class="stat-value" id="classesMissed">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Today's Classes -->
+        <section class="classes-section">
+            <h2>Today's Classes</h2>
+            <ul class="classes-list" id="todayClasses">
+                <!-- Classes will be dynamically added here -->
+            </ul>
+        </section>
+
+        <!-- Attendance History -->
+        <section class="history-section">
+            <h2>Attendance History</h2>
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceHistory">
+                        <!-- Attendance records will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

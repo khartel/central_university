@@ -1,0 +1,255 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #e1e6ff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.container {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+}
+
+.login-box {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+
+/* Right Section (Welcome Content) - Now first in mobile view */
+.right-section {
+  width: 100%;
+  padding: 40px;
+  background: linear-gradient(to top left, #a13547, #b32b37);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  order: 1;
+}
+
+.welcome-text {
+  margin-bottom: 30px;
+}
+
+.welcome-text h1 {
+  font-size: 30px;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.right-section img {
+  width: 100%;
+  max-width: 350px;
+  height: auto;
+  margin-top: 30px;
+}
+
+/* Left Section (Login Form) */
+.left-section {
+  width: 100%;
+  padding: 60px 50px;
+  position: relative;
+  order: 2;
+}
+
+.left-section h1 {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.left-section p {
+  font-size: 14px;
+  color: #a1a1a1;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 45px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.form-group i {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 15px;
+  color: #aaa;
+  font-size: 20px;
+}
+
+.form-group .checkmark {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  color: green;
+  font-size: 20px;
+  display: none;
+}
+
+.form-group.valid .checkmark {
+  display: block;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 45px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #aaa;
+  font-size: 20px;
+}
+
+.password-rules {
+  font-size: 12px;
+  margin-top: -15px;
+  margin-bottom: 25px;
+}
+
+.password-rules span {
+  display: block;
+  color: orange;
+  transition: color 0.3s ease;
+}
+
+.password-rules span.valid {
+  color: green;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  background-color: #d64262;
+  color: white;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.extra-options {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.extra-options a {
+  color: #d64262;
+  text-decoration: none;
+  margin: 0 5px;
+}
+
+.extra-options a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+  .login-box {
+    flex-direction: row;
+    height: 600px;
+  }
+
+  .left-section {
+    width: 55%;
+    padding: 60px 50px;
+    order: 1;
+  }
+
+  .right-section {
+    width: 45%;
+    padding: 40px;
+    order: 2;
+  }
+
+  .welcome-text h1 {
+    font-size: 30px;
+  }
+}
+
+@media (min-width: 992px) {
+  .right-section img {
+    max-width: 400px;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 400px) {
+  .left-section, .right-section {
+    padding: 30px;
+  }
+
+  .left-section h1 {
+    font-size: 28px;
+  }
+
+  .welcome-text h1 {
+    font-size: 24px;
+  }
+
+  .extra-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .extra-options span {
+    display: none;
+  }
+}
+
+/* Improve Right Section on Mobile */
+@media (max-width: 768px) {
+  .right-section {
+    padding: 20px 20px 10px;
+  }
+
+  .welcome-text {
+    margin-bottom: 10px;
+  }
+
+  .welcome-text h1 {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+  .right-section img {
+    max-width: 200px;
+    margin-top: 10px;
+  }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Attendance Portal</title>
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="style.css">
+  <link rel="shortcut icon" href="cu-logo.png" type="image/x-icon">
+</head>
+<body>
+<div class="container">
+  <div class="login-box">
+    <!-- Left Section -->
+    <div class="left-section">
+      <h1>LOGIN</h1>
+      <p>Fill in with appropriate details to proceed</p>
+
+      <form id="loginForm">
+        <div class="form-group" id="email-group">
+          <i class='bx bx-envelope'></i>
+          <input type="email" name="email" placeholder="Email" required oninput="validateInput(this, 'email-group')">
+          <i class='bx bx-check checkmark'></i>
+        </div>
+
+        <div class="form-group" id="password-group">
+          <i class='bx bx-lock'></i>
+          <input id="password" name="password" type="password" placeholder="Password" required oninput="checkPassword(this)">
+          <i class='bx bx-show password-toggle' onclick="togglePassword()"></i>
+        </div>
+
+        <div class="password-rules" id="rules">
+          <span id="rule1">• At least 8 characters</span>
+          <span id="rule2">• At least one number (0–9) or a symbol</span>
+          <span id="rule3">• Lowercase (a–z) and uppercase (A–Z)</span>
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+      </form>
+
+      <div id="loginError" style="color: red; text-align: center; margin-top: 15px; display: none;"></div>
+
+      <div class="extra-options">
+        <a href="forgot-password.html">Forgot Password?</a>
+        <span> | </span>
+        <a href="signup.html">Don't have an account? Register</a>
+      </div>
+    </div>
+
+    <!-- Right Section -->
+    <div class="right-section">
+      <div class="welcome-text">
+        <h1>Welcome to</h1>
+        <h1>Central University  </h1>
+        <h1>Online Attendance Portal</h1>
+      </div>
+      <img src="123.svg" alt="Student Illustration">
+    </div>
+  </div>
+</div>
+<script src="password_script.js"></script>
+</body>
+</html>
