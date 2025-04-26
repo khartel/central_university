@@ -1,27 +1,38 @@
-// Fetch lecturer data and update UI
+// Global variables
+let currentUser = null;
+
+// Fetch lecturer data from PHP backend
 async function fetchLecturerData() {
     try {
-        const response = await fetch('/api/user', {
+        const response = await fetch('lecturer-dashboard.php', {
             credentials: 'include'
         });
         const data = await response.json();
+        
         if (data.success) {
-            document.getElementById('userName').textContent = data.user.full_name;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.full_name)}`;
-            document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.user.full_name}!`;
+            currentUser = data.user;
+            
+            // Update UI with user data
+            document.getElementById('userName').textContent = currentUser.full_name;
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=64`;
+            document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser.full_name.split(' ')[0]}!`;
+        } else {
+            window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Error fetching lecturer data:', error);
+        window.location.href = 'index.html';
     }
 }
 
 // View Class Schedule
 async function viewClassSchedule() {
     try {
-        const response = await fetch('/api/courses', {
+        const response = await fetch('api/courses.php', {
             credentials: 'include'
         });
         const data = await response.json();
+        
         if (data.success) {
             const scheduleList = document.getElementById('scheduleList');
             scheduleList.innerHTML = '';
@@ -51,16 +62,16 @@ function closeScheduleModal() {
 // View Student List
 async function viewStudentList() {
     try {
-        const coursesResponse = await fetch('/api/courses', {
+        const response = await fetch('api/courses.php', {
             credentials: 'include'
         });
-        const coursesData = await coursesResponse.json();
+        const data = await response.json();
         
-        if (coursesData.success) {
+        if (data.success) {
             const courseSelect = document.getElementById('courseSelect');
             courseSelect.innerHTML = '<option value="">Select Course</option>';
             
-            coursesData.data.forEach(course => {
+            data.data.forEach(course => {
                 const option = document.createElement('option');
                 option.value = course.id;
                 option.textContent = course.name;
@@ -78,7 +89,7 @@ async function viewStudentList() {
 // Load students for selected course
 async function loadStudentsForCourse(courseId) {
     try {
-        const response = await fetch(`/api/courses/${courseId}/students`, {
+        const response = await fetch(`api/courses.php?course_id=${courseId}&action=students`, {
             credentials: 'include'
         });
         const data = await response.json();
@@ -91,7 +102,9 @@ async function loadStudentsForCourse(courseId) {
                 const div = document.createElement('div');
                 div.className = 'student-item';
                 div.innerHTML = `
-                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}" alt="">
+                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=random&color=fff&size=64" 
+                         alt="${student.full_name}'s avatar"
+                         class="student-avatar">
                     <div>
                         <h4>${student.full_name}</h4>
                         <p>${student.email}</p>
@@ -113,7 +126,7 @@ function closeStudentsModal() {
 // Download Attendance Report
 async function downloadAttendanceReport() {
     try {
-        const response = await fetch('/api/lecturer/attendance-report', {
+        const response = await fetch('api/attendance.php?action=report', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -149,13 +162,16 @@ async function generateCode() {
     }
 
     try {
-        const response = await fetch('/api/attendance/generate-code', {
+        const response = await fetch('api/attendance.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ course_id: courseId })
+            body: JSON.stringify({ 
+                action: 'generate_code',
+                course_id: courseId 
+            })
         });
 
         const data = await response.json();
@@ -199,34 +215,14 @@ function closeGenerateCodeModal() {
     document.getElementById('generateCodeModal').style.display = 'none';
 }
 
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', () => {
-    fetchLecturerData();
-    fetchCourses();
-    fetchAttendanceStats();
-    fetchTodayAttendance();
-
-    document.getElementById('courseSelect').addEventListener('change', (e) => {
-        if (e.target.value) {
-            loadStudentsForCourse(e.target.value);
-        } else {
-            document.getElementById('studentsList').innerHTML = '';
-        }
-    });
-
-    setInterval(() => {
-        fetchAttendanceStats();
-        fetchTodayAttendance();
-    }, 300000);
-});
-
 // Fetch courses for dropdown
 async function fetchCourses() {
     try {
-        const response = await fetch('/api/courses', {
+        const response = await fetch('api/courses.php', {
             credentials: 'include'
         });
         const data = await response.json();
+        
         if (data.success) {
             const courseSelect = document.getElementById('courseSelect');
             const courseFilter = document.getElementById('courseFilter');
@@ -245,10 +241,11 @@ async function fetchCourses() {
 // Fetch attendance statistics
 async function fetchAttendanceStats() {
     try {
-        const response = await fetch('/api/lecturer/stats', {
+        const response = await fetch('api/attendance.php?action=stats', {
             credentials: 'include'
         });
         const data = await response.json();
+        
         if (data.success) {
             document.getElementById('totalStudents').textContent = data.stats.total_students;
             document.getElementById('todayClasses').textContent = data.stats.today_classes;
@@ -262,10 +259,11 @@ async function fetchAttendanceStats() {
 // Fetch today's attendance
 async function fetchTodayAttendance() {
     try {
-        const response = await fetch('/api/lecturer/today-attendance', {
+        const response = await fetch('api/attendance.php?action=today', {
             credentials: 'include'
         });
         const data = await response.json();
+        
         if (data.success) {
             const attendanceTable = document.getElementById('attendanceTable');
             attendanceTable.innerHTML = '';
@@ -289,5 +287,40 @@ async function fetchTodayAttendance() {
 
 // View attendance details
 async function viewAttendanceDetails(courseId) {
-    console.log('Viewing details for course:', courseId);
+    try {
+        const response = await fetch(`api/attendance.php?action=details&course_id=${courseId}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`Attendance details for course ${courseId}:\n\n${JSON.stringify(data.details, null, 2)}`);
+        }
+    } catch (error) {
+        console.error('Error fetching attendance details:', error);
+        alert('Failed to load attendance details');
+    }
 }
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', () => {
+    fetchLecturerData();
+    fetchCourses();
+    fetchAttendanceStats();
+    fetchTodayAttendance();
+
+    // Event listener for course selection change
+    document.getElementById('courseSelect').addEventListener('change', (e) => {
+        if (e.target.value) {
+            loadStudentsForCourse(e.target.value);
+        } else {
+            document.getElementById('studentsList').innerHTML = '';
+        }
+    });
+
+    // Refresh data every 5 minutes
+    setInterval(() => {
+        fetchAttendanceStats();
+        fetchTodayAttendance();
+    }, 300000);
+});

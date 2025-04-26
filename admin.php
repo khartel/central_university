@@ -192,6 +192,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
 <html>
 <head>
     <title>Admin - User Management</title>
+    <link rel="shortcut icon" href="cu-logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -250,17 +251,18 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             align-items: center;
         }
         
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-        
         .logo-icon {
-            color: var(--primary);
-            font-size: 1.5rem;
+        width: 24px;       /* Small profile picture size */
+        height: 24px;      /* Maintain aspect ratio */
+        object-fit: cover;  /* Ensures image fills space without distortion */
+        border-radius: 50%; /* Makes it circular like a profile picture */
+        margin-right: 0.5rem;
+        vertical-align: middle; 
+        }
+
+        .logo-text {
+        font-size: 1.2rem;
+        font-weight: 600;
         }
         
         .logout-btn {
@@ -517,8 +519,8 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
     <header class="header">
         <div class="header-container">
             <div class="logo">
-                <i class="fas fa-graduation-cap logo-icon"></i>
-                <span>Central University - Admin</span>
+            <img src="cu-logo.png" class="logo-icon" alt="Central University Logo">
+            <span class="logo-text">Central University</span>
             </div>
             <a href="?logout=1" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>

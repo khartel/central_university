@@ -1,0 +1,73 @@
+:root {
+    --lecturer-primary: #3498db;
+    --student-primary: #2ecc71;
+}
+
+/* Loading State */
+.auth-check-loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+    transition: opacity 0.3s ease;
+}
+
+.auth-check-loading::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    z-index: 999;
+}
+
+.auth-check-loading::after {
+    content: "Verifying your credentials...";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-check-loading::after::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Role-Specific Styles */
+.lecturer-dashboard {
+    --primary-color: var(--lecturer-primary);
+    /* Additional lecturer-specific overrides */
+}
+
+.student-dashboard {
+    --primary-color: var(--student-primary);
+    /* Additional student-specific overrides */
+}
+
+/* Apply the color variables */
+.lecturer-dashboard .action-btn.action-blue,
+.student-dashboard .action-btn.action-green {
+    background-color: var(--primary-color);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

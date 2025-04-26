@@ -1,17 +1,27 @@
-// Fetch user data and update UI
+// Global variables
+let currentUser = null;
+
+// Fetch user data from PHP backend
 async function fetchUserData() {
     try {
-        const response = await fetch('/api/user', {
+        const response = await fetch('student-dashboard.php', {
             credentials: 'include'
         });
         const data = await response.json();
+        
         if (data.success) {
-            document.getElementById('userName').textContent = data.user.full_name;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.full_name)}`;
-            document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.user.full_name.split(' ')[0]}!`;
+            currentUser = data.user;
+            
+            // Update UI with user data
+            document.getElementById('userName').textContent = currentUser.full_name;
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=64`;
+            document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser.full_name.split(' ')[0]}!`;
+        } else {
+            window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Error fetching user data:', error);
+        window.location.href = 'index.html';
     }
 }
 
@@ -24,7 +34,7 @@ async function markAttendance() {
     }
 
     try {
-        const response = await fetch('/api/attendance/mark', {
+        const response = await fetch('api/attendance/mark.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,7 +63,7 @@ async function markAttendance() {
 // Fetch and display attendance statistics
 async function fetchAttendanceStats() {
     try {
-        const response = await fetch('/api/attendance/stats', {
+        const response = await fetch('api/attendance/stats.php', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -71,7 +81,7 @@ async function fetchAttendanceStats() {
 // Fetch and display today's classes
 async function fetchTodayClasses() {
     try {
-        const response = await fetch('/api/courses/today', {
+        const response = await fetch('api/courses/today.php', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -81,28 +91,18 @@ async function fetchTodayClasses() {
 
             data.classes.forEach(course => {
                 const li = document.createElement('li');
-                li.className = 'px-4 py-4 sm:px-6';
+                li.className = 'class-item';
                 li.innerHTML = `
-                    <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-book-reader text-blue-600 text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">${course.name}</h3>
-                            <p class="text-sm text-gray-500">
-                                <i class="fas fa-user-tie mr-1"></i> ${course.lecturer}
-                            </p>
-                            <p class="text-sm text-gray-500">
-                                <i class="fas fa-clock mr-1"></i> ${course.schedule}
-                            </p>
-                        </div>
-                    </div>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            course.attended ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                        }">
-                            ${course.attended ? 'Attended' : 'Not Marked'}
+                    <div class="class-header">
+                        <i class="fas fa-book-reader text-blue-600"></i>
+                        <h3>${course.name}</h3>
+                        <span class="status-badge ${course.attended ? 'present' : 'absent'}">
+                            ${course.attended ? 'Attended' : 'Pending'}
                         </span>
+                    </div>
+                    <div class="class-details">
+                        <p><i class="fas fa-user-tie"></i> ${course.lecturer}</p>
+                        <p><i class="fas fa-clock"></i> ${course.schedule}</p>
                     </div>
                 `;
                 todayClassesList.appendChild(li);
@@ -116,7 +116,7 @@ async function fetchTodayClasses() {
 // Fetch and display attendance history
 async function fetchAttendanceHistory() {
     try {
-        const response = await fetch('/api/attendance/history', {
+        const response = await fetch('api/attendance/history.php', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -127,16 +127,10 @@ async function fetchAttendanceHistory() {
             data.history.forEach(record => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">${record.course_name}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">${record.date}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            record.status === 'present' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }">
+                    <td>${record.course_name}</td>
+                    <td>${record.date}</td>
+                    <td>
+                        <span class="status-badge ${record.status}">
                             ${record.status.charAt(0).toUpperCase() + record.status.slice(1)}
                         </span>
                     </td>
