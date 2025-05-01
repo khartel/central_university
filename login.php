@@ -38,7 +38,7 @@ try {
         throw new Exception('Incorrect password.');
     }
 
-    // Start session
+    // Start session and store user data
     session_start();
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['email'] = $email;
@@ -46,7 +46,8 @@ try {
     
     echo json_encode([
         'success' => true,
-        'role' => $user['role']
+        'role' => $user['role'],
+        'user_id' => $user['id']
     ]);
 
 } catch (Exception $e) {

@@ -149,12 +149,13 @@ if (isset($_POST['add_user'])) {
     $full_name = trim($_POST['full_name']);
     $email = trim($_POST['email']);
     $role = trim($_POST['role']);
+    $index_no = ($role === 'student') ? trim($_POST['index_no']) : ''; // Only for students
 
     if (!str_ends_with($email, '@central.edu.gh')) {
         $errorMsg = "Email must end with @central.edu.gh";
     } else {
-        $stmt = $conn->prepare("INSERT INTO users (full_name, email, role) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $full_name, $email, $role);
+        $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, index_no) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $full_name, $email, $role, $index_no);
         if ($stmt->execute()) {
             $successMsg = "User <b>$full_name</b> added as <b>$role</b>. They'll set their password later.";
         } else {
@@ -171,7 +172,7 @@ $totalLecturers = $conn->query("SELECT COUNT(*) as count FROM users WHERE role='
 // Search & Filter
 $search = isset($_GET['search']) ? strtolower(trim($_GET['search'])) : '';
 $filterRole = isset($_GET['role']) ? $_GET['role'] : '';
-$query = "SELECT id, full_name, email, role, password FROM users";
+$query = "SELECT id, full_name, email, role, password, index_no FROM users";
 $conditions = [];
 
 if (!empty($filterRole)) {
@@ -179,7 +180,7 @@ if (!empty($filterRole)) {
 }
 if (!empty($search)) {
     $searchEscaped = $conn->real_escape_string($search);
-    $conditions[] = "(LOWER(full_name) LIKE '%$searchEscaped%' OR LOWER(email) LIKE '%$searchEscaped%')";
+    $conditions[] = "(LOWER(full_name) LIKE '%$searchEscaped%' OR LOWER(email) LIKE '%$searchEscaped%' OR index_no LIKE '%$searchEscaped%')";
 }
 if ($conditions) {
     $query .= " WHERE " . implode(" AND ", $conditions);
@@ -192,7 +193,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
 <html>
 <head>
     <title>Admin - User Management</title>
-    <link rel="shortcut icon" href="cu-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="pics/cu-logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -498,6 +499,11 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             text-transform: capitalize;
         }
         
+        /* Hide index number field when role is lecturer */
+        #indexNoGroup {
+            display: none;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header-container, .container {
@@ -519,7 +525,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
     <header class="header">
         <div class="header-container">
             <div class="logo">
-            <img src="cu-logo.png" class="logo-icon" alt="Central University Logo">
+            <img src="pics/cu-logo.png" class="logo-icon" alt="Central University Logo">
             <span class="logo-text">Central University</span>
             </div>
             <a href="?logout=1" class="logout-btn">
@@ -572,9 +578,13 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                         <label class="form-label">Email (@central.edu.gh)</label>
                         <input type="email" name="email" class="form-control" required>
                     </div>
+                    <div class="form-group" id="indexNoGroup">
+                        <label class="form-label">Index Number</label>
+                        <input type="text" name="index_no" class="form-control">
+                    </div>
                     <div class="form-group">
                         <label class="form-label">Role</label>
-                        <select name="role" class="form-control" required>
+                        <select name="role" id="roleSelect" class="form-control" required>
                             <option value="student">Student</option>
                             <option value="lecturer">Lecturer</option>
                         </select>
@@ -589,9 +599,9 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
         <!-- Search + Filter -->
         <form method="GET" class="filter-section">
             <div class="filter-group">
-                <label class="form-label">Search by name/email</label>
+                <label class="form-label">Search by name/email/index</label>
                 <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
-                       class="form-control" placeholder="Search...">
+                       class="form-control" placeholder="Search by name, email or index number...">
             </div>
             <div class="filter-group">
                 <label class="form-label">Filter by role</label>
@@ -615,6 +625,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Index No</th>
                             <th>Role</th>
                             <th>Status</th>
                         </tr>
@@ -624,6 +635,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                             <tr>
                                 <td><?php echo htmlspecialchars($u['full_name']); ?></td>
                                 <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                <td><?php echo ($u['role'] === 'student') ? htmlspecialchars($u['index_no']) : 'N/A'; ?></td>
                                 <td class="capitalize"><?php echo $u['role']; ?></td>
                                 <td class="<?php echo $u['password'] ? 'status-active' : 'status-inactive'; ?>">
                                     <?php echo $u['password'] ? 'Active' : 'Inactive'; ?>
@@ -632,7 +644,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                         <?php endforeach; ?>
                         <?php if (empty($users)): ?>
                             <tr>
-                                <td colspan="4" style="text-align: center; padding: 2rem; color: var(--gray);">
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--gray);">
                                     No users found.
                                 </td>
                             </tr>
@@ -642,5 +654,30 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             </div>
         </div>
     </main>
+
+    <script>
+        // Show/hide index number field based on role selection
+        document.getElementById('roleSelect').addEventListener('change', function() {
+            const indexNoGroup = document.getElementById('indexNoGroup');
+            if (this.value === 'student') {
+                indexNoGroup.style.display = 'block';
+                indexNoGroup.querySelector('input').setAttribute('required', 'required');
+            } else {
+                indexNoGroup.style.display = 'none';
+                indexNoGroup.querySelector('input').removeAttribute('required');
+            }
+        });
+
+        // Initialize the display based on current selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('roleSelect');
+            const indexNoGroup = document.getElementById('indexNoGroup');
+            
+            if (roleSelect.value === 'student') {
+                indexNoGroup.style.display = 'block';
+                indexNoGroup.querySelector('input').setAttribute('required', 'required');
+            }
+        });
+    </script>
 </body>
 </html>

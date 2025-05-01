@@ -9,6 +9,7 @@
   --input-bg: #ffffff;
   --input-border: #cccccc;
   --error-color: #ff3333;
+  --success-color: #4ade80;
   --right-section-bg: linear-gradient(to top left, #a13547, #b32b37);
 }
 
@@ -121,7 +122,7 @@ body {
 
 .form-group input {
   width: 100%;
-  padding: 14px 45px;
+  padding: 14px 60px 14px 45px;
   border-radius: 12px;
   border: 1px solid var(--input-border);
   font-size: 16px;
@@ -130,7 +131,7 @@ body {
   transition: all 0.3s ease;
 }
 
-.form-group i {
+.form-group i:not(.password-toggle) {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -139,12 +140,26 @@ body {
   font-size: 20px;
 }
 
-.form-group .checkmark {
+.password-toggle {
   position: absolute;
+  right: 35px;
   top: 50%;
-  right: 15px;
   transform: translateY(-50%);
-  color: #4ade80;
+  cursor: pointer;
+  color: var(--secondary-text);
+  font-size: 20px;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  padding: 5px;
+}
+
+.checkmark {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--success-color);
   font-size: 20px;
   display: none;
 }
@@ -153,30 +168,24 @@ body {
   display: block;
 }
 
-.password-toggle {
-  position: absolute;
-  top: 50%;
-  right: 45px;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: var(--secondary-text);
-  font-size: 20px;
-}
-
 .password-rules {
   font-size: 12px;
   margin-top: -15px;
   margin-bottom: 25px;
+  transition: all 0.3s ease;
+  max-height: 100px;
+  overflow: hidden;
 }
 
 .password-rules span {
   display: block;
   color: var(--primary-color);
   opacity: 0.8;
+  transition: all 0.3s ease;
 }
 
 .password-rules span.valid {
-  color: #4ade80;
+  color: var(--success-color);
   opacity: 1;
 }
 
@@ -192,14 +201,17 @@ body {
   transition: all 0.3s ease;
 }
 
-.btn:active {
-  transform: scale(0.98);
+.btn:hover {
+  background-color: var(--accent-color);
 }
 
 #loginError {
   color: var(--error-color);
   text-align: center;
   margin-top: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgba(255, 51, 51, 0.1);
   display: none;
 }
 
@@ -213,10 +225,6 @@ body {
   color: var(--primary-color);
   text-decoration: none;
   margin: 0 5px;
-}
-
-.extra-options a:hover {
-  text-decoration: underline;
 }
 
 #theme-switch {
@@ -262,18 +270,20 @@ body {
 
   .left-section {
     width: 55%;
-    padding: 60px 50px;
     order: 1;
   }
 
   .right-section {
     width: 45%;
-    padding: 40px;
     order: 2;
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 767px) {
+  body {
+    padding: 15px;
+  }
+
   .left-section, .right-section {
     padding: 30px;
   }
@@ -282,14 +292,32 @@ body {
     font-size: 28px;
   }
 
+  .left-section p {
+    margin-bottom: 30px;
+  }
+
+  .welcome-text {
+    margin-bottom: 15px;
+  }
+
   .welcome-text h1 {
     font-size: 24px;
+    margin-bottom: 5px;
+  }
+
+  .right-section img {
+    max-width: 250px;
+    margin-top: 15px;
+  }
+
+  .form-group input {
+    padding: 12px 50px 12px 40px;
   }
 
   .extra-options {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 10px;
   }
 
   .extra-options span {
@@ -297,22 +325,20 @@ body {
   }
 }
 
-@media (max-width: 768px) {
-  .right-section {
-    padding: 20px 20px 10px;
+@media (max-width: 480px) {
+  .left-section, .right-section {
+    padding: 25px 20px;
   }
 
-  .welcome-text {
-    margin-bottom: 10px;
+  .left-section h1 {
+    font-size: 24px;
   }
 
   .welcome-text h1 {
     font-size: 20px;
-    margin-bottom: 5px;
   }
 
   .right-section img {
     max-width: 200px;
-    margin-top: 10px;
   }
 }

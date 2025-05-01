@@ -5,6 +5,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role ENUM('student', 'lecturer') DEFAULT 'student',
+    index_no VARCHAR(20) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -22,8 +23,7 @@ CREATE TABLE students (
 
 courses table (if needed for dashboard):
 CREATE TABLE courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_code VARCHAR(10) NOT NULL,
+    course_code VARCHAR(10) NOT NULL PRIMARY KEY,
     course_name VARCHAR(100),
     level VARCHAR(20),
     credit_hours INT

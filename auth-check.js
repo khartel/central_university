@@ -1,8 +1,4 @@
-/**
- * Universal Auth Check for Both Student and Lecturer Dashboards
- * Must be included in all protected pages with: <script src="auth-check.js" defer></script>
- */
-
+/**Auth Check for Both Student and Lecturer Dashboards**/
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Show loading state
