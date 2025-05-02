@@ -16,6 +16,14 @@ async function fetchUserData() {
             document.getElementById('userName').textContent = currentUser.full_name;
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=64`;
             document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser.full_name.split(' ')[0]}!`;
+            
+            // Set popup content
+            document.getElementById('popupUserName').textContent = currentUser.full_name;
+            document.getElementById('popupUserAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=128`;
+            document.getElementById('popupUserEmail').textContent = currentUser.email;
+            document.getElementById('popupUserIndex').textContent = currentUser.index_no;
+            document.getElementById('popupUserProgram').textContent = currentUser.program;
+            document.getElementById('popupUserLevel').textContent = currentUser.level;
         } else {
             window.location.href = 'index.html';
         }
@@ -143,12 +151,31 @@ async function fetchAttendanceHistory() {
     }
 }
 
+// Show profile popup
+function showProfilePopup() {
+    document.getElementById('profilePopup').classList.add('active');
+}
+
+// Hide profile popup
+function hideProfilePopup() {
+    document.getElementById('profilePopup').classList.remove('active');
+}
+
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', () => {
     fetchUserData();
     fetchAttendanceStats();
     fetchTodayClasses();
     fetchAttendanceHistory();
+
+    // Add event listeners for profile popup
+    document.querySelector('.user-profile').addEventListener('click', showProfilePopup);
+    document.querySelector('.close-popup-btn').addEventListener('click', hideProfilePopup);
+    document.getElementById('profilePopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideProfilePopup();
+        }
+    });
 
     // Refresh data every 5 minutes
     setInterval(() => {

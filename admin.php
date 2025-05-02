@@ -2,7 +2,11 @@
 include 'db.php';
 session_start();
 
-// logout
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Logout functionality
 if (isset($_GET['logout'])) {
     session_unset();
     session_destroy();
@@ -10,11 +14,13 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Authentication
+// Authentication system
 if (!isset($_SESSION['admin_authenticated'])) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])) {
-        if ($_POST['admin_password'] === 'password') {
+        $hashed_password = password_hash('password', PASSWORD_DEFAULT);
+        if (password_verify($_POST['admin_password'], $hashed_password)) {
             $_SESSION['admin_authenticated'] = true;
+            $_SESSION['admin_last_activity'] = time();
         } else {
             $auth_error = "Invalid password.";
         }
@@ -140,36 +146,117 @@ if (!isset($_SESSION['admin_authenticated'])) {
             </div>
         </body>
         </html>
-        <?php exit; }
+        <?php exit; 
+    }
 }
 
-// Add user (no redirect)
+// Session timeout (30 minutes)
+if (isset($_SESSION['admin_last_activity']) && (time() - $_SESSION['admin_last_activity'] > 1800)) {
+    session_unset();
+    session_destroy();
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+$_SESSION['admin_last_activity'] = time();
+
+// Add user functionality
 $successMsg = $errorMsg = '';
 if (isset($_POST['add_user'])) {
     $full_name = trim($_POST['full_name']);
     $email = trim($_POST['email']);
     $role = trim($_POST['role']);
-    $index_no = ($role === 'student') ? trim($_POST['index_no']) : ''; // Only for students
-
-    if (!str_ends_with($email, '@central.edu.gh')) {
-        $errorMsg = "Email must end with @central.edu.gh";
+    
+    if ($role === 'student') {
+        $index_no = trim($_POST['index_no']);
+        $program = trim($_POST['program']);
+        $level = trim($_POST['level']);
+        
+        // Validate student index number format
+        if (!preg_match('/^[A-Za-z0-9]{8,20}$/', $index_no)) {
+            $errorMsg = "Invalid index number format. Use 8-20 alphanumeric characters.";
+        }
     } else {
-        $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, index_no) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $full_name, $email, $role, $index_no);
-        if ($stmt->execute()) {
-            $successMsg = "User <b>$full_name</b> added as <b>$role</b>. They'll set their password later.";
+        $index_no = NULL; // No index number for lecturers
+    }
+
+    if (empty($errorMsg)) {
+        if (!str_ends_with($email, '@central.edu.gh')) {
+            $errorMsg = "Email must end with @central.edu.gh";
         } else {
-            $errorMsg = "Error: " . $stmt->error;
+            // Start transaction
+            $conn->begin_transaction();
+            
+            try {
+                // Check if email already exists
+                $check_email = $conn->prepare("SELECT id FROM users WHERE email = ?");
+                $check_email->bind_param("s", $email);
+                $check_email->execute();
+                $check_email->store_result();
+                
+                if ($check_email->num_rows > 0) {
+                    $errorMsg = "Error: Email already exists.";
+                    $check_email->close();
+                    throw new Exception($errorMsg);
+                }
+                $check_email->close();
+                
+                // For students, check if index number exists
+                if ($role === 'student') {
+                    $check_index = $conn->prepare("SELECT id FROM users WHERE index_no = ?");
+                    $check_index->bind_param("s", $index_no);
+                    $check_index->execute();
+                    $check_index->store_result();
+                    
+                    if ($check_index->num_rows > 0) {
+                        $errorMsg = "Error: Index number already exists.";
+                        $check_index->close();
+                        throw new Exception($errorMsg);
+                    }
+                    $check_index->close();
+                }
+                
+                // Insert into users table
+                $stmt = $conn->prepare("INSERT INTO users (full_name, email, role, index_no, password) VALUES (?, ?, ?, ?, NULL)");
+                $stmt->bind_param("ssss", $full_name, $email, $role, $index_no);
+                
+                if (!$stmt->execute()) {
+                    $errorMsg = "Error adding user: " . $stmt->error;
+                    $stmt->close();
+                    throw new Exception($errorMsg);
+                }
+                $stmt->close();
+                
+                // If student, insert into students table
+                if ($role === 'student') {
+                    $stmt = $conn->prepare("INSERT INTO students (index_no, full_name, email, program, level) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->bind_param("sssss", $index_no, $full_name, $email, $program, $level);
+                    
+                    if (!$stmt->execute()) {
+                        $errorMsg = "Error adding student details: " . $stmt->error;
+                        $stmt->close();
+                        throw new Exception($errorMsg);
+                    }
+                    $stmt->close();
+                }
+                
+                // Commit transaction
+                $conn->commit();
+                $successMsg = "User <b>" . htmlspecialchars($full_name) . "</b> added as <b>" . htmlspecialchars($role) . "</b>. They'll set their password later.";
+                
+            } catch (Exception $e) {
+                $conn->rollback();
+                if (empty($errorMsg)) $errorMsg = "An error occurred during registration.";
+            }
         }
     }
 }
 
-// Stats
+// Get statistics
 $totalUsers = $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'];
 $totalStudents = $conn->query("SELECT COUNT(*) as count FROM users WHERE role='student'")->fetch_assoc()['count'];
 $totalLecturers = $conn->query("SELECT COUNT(*) as count FROM users WHERE role='lecturer'")->fetch_assoc()['count'];
 
-// Search & Filter
+// Search and filter functionality
 $search = isset($_GET['search']) ? strtolower(trim($_GET['search'])) : '';
 $filterRole = isset($_GET['role']) ? $_GET['role'] : '';
 $query = "SELECT id, full_name, email, role, password, index_no FROM users";
@@ -187,6 +274,9 @@ if ($conditions) {
 }
 $query .= " ORDER BY created_at DESC";
 $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
+
+// Close connection
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -253,17 +343,17 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
         }
         
         .logo-icon {
-        width: 24px;       /* Small profile picture size */
-        height: 24px;      /* Maintain aspect ratio */
-        object-fit: cover;  /* Ensures image fills space without distortion */
-        border-radius: 50%; /* Makes it circular like a profile picture */
-        margin-right: 0.5rem;
-        vertical-align: middle; 
+            width: 24px;
+            height: 24px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            vertical-align: middle;
         }
 
         .logo-text {
-        font-size: 1.2rem;
-        font-weight: 600;
+            font-size: 1.2rem;
+            font-weight: 600;
         }
         
         .logout-btn {
@@ -421,6 +511,21 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             background-color: var(--primary-dark);
         }
         
+        /* Student Fields Section */
+        #studentFields {
+            display: none;
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+        }
+        
+        #studentFields .form-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
         /* Filter Section */
         .filter-section {
             display: flex;
@@ -499,11 +604,6 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             text-transform: capitalize;
         }
         
-        /* Hide index number field when role is lecturer */
-        #indexNoGroup {
-            display: none;
-        }
-        
         /* Responsive */
         @media (max-width: 768px) {
             .header-container, .container {
@@ -525,8 +625,8 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
     <header class="header">
         <div class="header-container">
             <div class="logo">
-            <img src="pics/cu-logo.png" class="logo-icon" alt="Central University Logo">
-            <span class="logo-text">Central University</span>
+                <img src="pics/cu-logo.png" class="logo-icon" alt="Central University Logo">
+                <span class="logo-text">Central University</span>
             </div>
             <a href="?logout=1" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
@@ -578,10 +678,6 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                         <label class="form-label">Email (@central.edu.gh)</label>
                         <input type="email" name="email" class="form-control" required>
                     </div>
-                    <div class="form-group" id="indexNoGroup">
-                        <label class="form-label">Index Number</label>
-                        <input type="text" name="index_no" class="form-control">
-                    </div>
                     <div class="form-group">
                         <label class="form-label">Role</label>
                         <select name="role" id="roleSelect" class="form-control" required>
@@ -590,6 +686,31 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                         </select>
                     </div>
                 </div>
+                
+                <!-- Student-specific fields (hidden by default) -->
+                <div id="studentFields">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Index Number</label>
+                            <input type="text" name="index_no" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Program</label>
+                            <input type="text" name="program" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Level</label>
+                            <select name="level" class="form-control">
+                                <option value="100">Level 100</option>
+                                <option value="200">Level 200</option>
+                                <option value="300">Level 300</option>
+                                <option value="400">Level 400</option>
+                                <option value="500">Level 500</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-group" style="text-align: right; margin-top: 1rem;">
                     <button type="submit" class="btn btn-primary">Add User</button>
                 </div>
@@ -635,7 +756,7 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                             <tr>
                                 <td><?php echo htmlspecialchars($u['full_name']); ?></td>
                                 <td><?php echo htmlspecialchars($u['email']); ?></td>
-                                <td><?php echo ($u['role'] === 'student') ? htmlspecialchars($u['index_no']) : 'N/A'; ?></td>
+                                <td><?php echo $u['index_no'] ? htmlspecialchars($u['index_no']) : 'N/A'; ?></td>
                                 <td class="capitalize"><?php echo $u['role']; ?></td>
                                 <td class="<?php echo $u['password'] ? 'status-active' : 'status-inactive'; ?>">
                                     <?php echo $u['password'] ? 'Active' : 'Inactive'; ?>
@@ -656,26 +777,38 @@ $users = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
     </main>
 
     <script>
-        // Show/hide index number field based on role selection
+        // Show/hide student fields based on role selection
         document.getElementById('roleSelect').addEventListener('change', function() {
-            const indexNoGroup = document.getElementById('indexNoGroup');
+            const studentFields = document.getElementById('studentFields');
+            const studentInputs = studentFields.querySelectorAll('input, select');
+            
             if (this.value === 'student') {
-                indexNoGroup.style.display = 'block';
-                indexNoGroup.querySelector('input').setAttribute('required', 'required');
+                studentFields.style.display = 'block';
+                studentInputs.forEach(input => {
+                    if (input.name === 'index_no' || input.name === 'program') {
+                        input.setAttribute('required', 'required');
+                    }
+                });
             } else {
-                indexNoGroup.style.display = 'none';
-                indexNoGroup.querySelector('input').removeAttribute('required');
+                studentFields.style.display = 'none';
+                studentInputs.forEach(input => {
+                    input.removeAttribute('required');
+                });
             }
         });
 
         // Initialize the display based on current selection
         document.addEventListener('DOMContentLoaded', function() {
             const roleSelect = document.getElementById('roleSelect');
-            const indexNoGroup = document.getElementById('indexNoGroup');
+            const studentFields = document.getElementById('studentFields');
             
             if (roleSelect.value === 'student') {
-                indexNoGroup.style.display = 'block';
-                indexNoGroup.querySelector('input').setAttribute('required', 'required');
+                studentFields.style.display = 'block';
+                studentFields.querySelectorAll('input, select').forEach(input => {
+                    if (input.name === 'index_no' || input.name === 'program') {
+                        input.setAttribute('required', 'required');
+                    }
+                });
             }
         });
     </script>

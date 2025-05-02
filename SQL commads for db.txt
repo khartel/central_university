@@ -1,24 +1,22 @@
 ﻿Users table (for login/singup) : use this for signup/login authentication
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    index_no VARCHAR(20) UNIQUE,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NULL,
     role ENUM('student', 'lecturer') DEFAULT 'student',
-    index_no VARCHAR(20) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-students table (profile info) : links this with the users table using user_id
 CREATE TABLE students (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    program VARCHAR(100),
-    level VARCHAR(20),
-    phone VARCHAR(15),
-    dob DATE,
-    address TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    index_no VARCHAR(20) UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    program VARCHAR(100) NOT NULL,
+    level VARCHAR(50) NOT NULL,
+    FOREIGN KEY (index_no) REFERENCES users(index_no) ON DELETE CASCADE
 );
 
 courses table (if needed for dashboard):

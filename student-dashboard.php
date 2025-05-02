@@ -10,7 +10,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 
 // Fetch user data from database
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT full_name, email FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT u.full_name, u.email, u.index_no, s.program, s.level 
+                       FROM users u
+                       LEFT JOIN students s ON u.index_no = s.index_no
+                       WHERE u.id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -40,7 +43,10 @@ echo json_encode([
     'user' => [
         'full_name' => $user['full_name'],
         'initials' => $initials,
-        'email' => $user['email']
+        'email' => $user['email'],
+        'index_no' => $user['index_no'],
+        'program' => $user['program'],
+        'level' => $user['level']
     ]
 ]);
 ?>
