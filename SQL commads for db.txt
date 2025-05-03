@@ -1,5 +1,4 @@
-﻿Users table (for login/singup) : use this for signup/login authentication
-CREATE TABLE users (
+﻿CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     index_no VARCHAR(20) UNIQUE,
     full_name VARCHAR(100) NOT NULL,
@@ -19,7 +18,6 @@ CREATE TABLE students (
     FOREIGN KEY (index_no) REFERENCES users(index_no) ON DELETE CASCADE
 );
 
-courses table (if needed for dashboard):
 CREATE TABLE courses (
     course_code VARCHAR(10) NOT NULL PRIMARY KEY,
     course_name VARCHAR(100),

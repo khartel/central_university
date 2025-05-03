@@ -30,18 +30,28 @@
                 </button>
                 
                 <!--notification bell and username & profile-->
-                <button class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge"></span>
-                </button>
-                <div class="user-profile">
-                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=?" alt="Profile" class="user-avatar"/>
-                    <span id="userName">Loading...</span>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+                    <div class="user-profile">
+                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=?" alt="Profile" class="user-avatar"/>
+                        <span id="userName">Loading...</span>
+                    </div>
+
+                <!-- Hamburger Menu Button -->
+                    <button class="hamburger-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
                 </div>
-                <a href="index.html" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
             </div>
+    
+    
+        <!-- Mobile Menu (now used for both desktop and mobile) -->
+        <div class="mobile-menu">
+            <a href="#" class="mobile-menu-item enroll-link"><i class="fas fa-plus-circle"></i> Enroll Courses</a>
+            <a href="#" class="mobile-menu-item registered-link"><i class="fas fa-list-alt"></i> Registered Courses</a>
+            <a href="index.html" class="mobile-menu-item logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </nav>
 
@@ -76,11 +86,13 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <!-- Welcome Section -->
         <section class="welcome-section">
             <h1 id="welcomeMessage">Welcome back!</h1>
             <p class="welcome-subtext">Track your attendance and stay updated with your courses.</p>
         </section>
 
+        <!-- Attendance Form -->
         <section class="attendance-section">
             <h2>Mark Attendance</h2>
             <div class="attendance-form">
@@ -92,6 +104,7 @@
             <p class="form-note">Enter the attendance code provided by your lecturer.</p>
         </section>
 
+        <!-- Stats Cards -->
         <section class="stats-section">
             <div class="stat-card">
                 <i class="fas fa-chart-pie stat-icon"></i>
@@ -126,6 +139,7 @@
             </div>
         </section>
 
+        <!-- Today's Classes -->
         <section class="classes-section">
             <h2>Today's Classes</h2>
             <ul class="classes-list" id="todayClasses">
@@ -133,6 +147,7 @@
             </ul>
         </section>
 
+        <!-- Attendance History -->
         <section class="history-section">
             <h2>Attendance History</h2>
             <div class="history-table-container">

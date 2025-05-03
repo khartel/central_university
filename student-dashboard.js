@@ -161,6 +161,42 @@ function hideProfilePopup() {
     document.getElementById('profilePopup').classList.remove('active');
 }
 
+// Toggle mobile menu
+function toggleMobileMenu() {
+    const mobileMenu = document.querySelector('.mobile-menu');
+    mobileMenu.classList.toggle('active');
+}
+
+// Close menu when clicking outside
+function setupClickOutsideMenu() {
+    document.addEventListener('click', (e) => {
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        
+        if (mobileMenu.classList.contains('active')){
+            if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        }
+    });
+}
+
+// Show course enrollment interface
+function showCourseEnrollment() {
+    // This would be replaced with actual enrollment logic
+    alert('Course enrollment functionality will be implemented here');
+    // Close the menu after selection
+    document.querySelector('.mobile-menu').classList.remove('active');
+}
+
+// Show registered courses
+function showRegisteredCourses() {
+    // This would be replaced with actual registered courses display
+    alert('Registered courses functionality will be implemented here');
+    // Close the menu after selection
+    document.querySelector('.mobile-menu').classList.remove('active');
+}
+
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', () => {
     fetchUserData();
@@ -176,6 +212,16 @@ document.addEventListener('DOMContentLoaded', () => {
             hideProfilePopup();
         }
     });
+
+    // Add event listener for hamburger menu
+    document.querySelector('.hamburger-btn').addEventListener('click', toggleMobileMenu);
+
+    // Add click handlers for menu items
+    document.querySelector('.mobile-menu-item.enroll-link').addEventListener('click', showCourseEnrollment);
+    document.querySelector('.mobile-menu-item.registered-link').addEventListener('click', showRegisteredCourses);
+
+    // Setup click outside menu to close
+    setupClickOutsideMenu();
 
     // Refresh data every 5 minutes
     setInterval(() => {
