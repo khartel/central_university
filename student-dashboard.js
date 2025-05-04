@@ -173,7 +173,7 @@ function setupClickOutsideMenu() {
         const mobileMenu = document.querySelector('.mobile-menu');
         const hamburgerBtn = document.querySelector('.hamburger-btn');
         
-        if (mobileMenu.classList.contains('active')){
+        if (mobileMenu.classList.contains('active')) {
             if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
                 mobileMenu.classList.remove('active');
             }
@@ -181,19 +181,15 @@ function setupClickOutsideMenu() {
     });
 }
 
-// Show course enrollment interface
+// Navigate to course enrollment page
 function showCourseEnrollment() {
-    // This would be replaced with actual enrollment logic
-    alert('Course enrollment functionality will be implemented here');
-    // Close the menu after selection
+    window.location.href = 'enroll-courses.html';
     document.querySelector('.mobile-menu').classList.remove('active');
 }
 
-// Show registered courses
+// Navigate to registered courses page
 function showRegisteredCourses() {
-    // This would be replaced with actual registered courses display
-    alert('Registered courses functionality will be implemented here');
-    // Close the menu after selection
+    window.location.href = 'registered-courses.html';
     document.querySelector('.mobile-menu').classList.remove('active');
 }
 

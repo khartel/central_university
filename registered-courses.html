@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - Central University</title>
-    <link href="auth-check.css" rel="stylesheet">
+    <title>Registered Courses - Central University</title>
     <link href="student-dashboard.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="student-dashboard.js" defer></script>
-    <script src="auth-check.js" defer></script>
+    <script src="registered-courses.js" defer></script>
     <script src="darkmode.js" defer></script>
     <link rel="shortcut icon" href="pics/cu-logo.png" type="image/x-icon">
 </head>
@@ -39,10 +37,10 @@
                 </button>
             </div>
         </div>
-        <!-- Mobile Menu -->
         <div class="mobile-menu">
+            <a href="student-dashboard.html" class="mobile-menu-item"><i class="fas fa-home"></i> Dashboard</a>
             <a href="enroll-courses.html" class="mobile-menu-item enroll-link"><i class="fas fa-plus-circle"></i> Enroll Courses</a>
-            <a href="registered-courses.html" class="mobile-menu-item registered-link"><i class="fas fa-list-alt"></i> Registered Courses</a>
+            <a class="mobile-menu-item registered-link"><i class="fas fa-list-alt"></i> Registered Courses</a>
             <a href="index.html" class="mobile-menu-item logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </nav>
@@ -72,86 +70,37 @@
                     <span id="popupUserLevel" class="detail-value"></span>
                 </div>
             </div>
-            <button class="close-popup-btn">&times;</button>
+            <button class="close-popup-btn">×</button>
+        </div>
+    </div>
+
+    <!-- Password Verification Modal -->
+    <div id="passwordModal" class="profile-popup">
+        <div class="profile-popup-content">
+            <h2>Verify Password</h2>
+            <p>Please enter your password to confirm dropping selected courses.</p>
+            <input type="password" id="passwordInput" placeholder="Enter your password">
+            <div class="modal-actions">
+                <button class="submit-btn" onclick="verifyPassword()">Submit</button>
+                <button class="close-popup-btn" onclick="closePasswordModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Welcome Section -->
         <section class="welcome-section">
-            <h1 id="welcomeMessage">Welcome back!</h1>
-            <p class="welcome-subtext">Track your attendance and stay updated with your courses.</p>
+            <h1>Registered Courses</h1>
+            <p class="welcome-subtext">View or drop your registered courses for this semester.</p>
         </section>
 
-        <!-- Attendance Form -->
-        <section class="attendance-section">
-            <h2>Mark Attendance</h2>
-            <div class="attendance-form">
-                <input type="text" id="attendanceCode" placeholder="Enter attendance code">
-                <button onclick="markAttendance()" class="submit-btn">
-                    Submit Attendance
-                </button>
+        <section class="courses-section">
+            <h2>Your Courses</h2>
+            <div class="courses-list" id="coursesList">
+                <!-- Courses will be dynamically added here -->
             </div>
-            <p class="form-note">Enter the attendance code provided by your lecturer.</p>
-        </section>
-
-        <!-- Stats Cards -->
-        <section class="stats-section">
-            <div class="stat-card">
-                <i class="fas fa-chart-pie stat-icon"></i>
-                <div class="stat-info">
-                    <span class="stat-title">Attendance Rate</span>
-                    <span class="stat-value" id="attendanceRate">--</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-book stat-icon"></i>
-                <div class="stat-info">
-                    <span class="stat-title">Total Classes</span>
-                    <span class="stat-value" id="totalClasses">--</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-check-circle stat-icon"></i>
-                <div class="stat-info">
-                    <span class="stat-title">Classes Attended</span>
-                    <span class="stat-value" id="classesAttended">--</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-times-circle stat-icon"></i>
-                <div class="stat-info">
-                    <span class="stat-title">Classes Missed</span>
-                    <span class="stat-value" id="classesMissed">--</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Today's Classes -->
-        <section class="classes-section">
-            <h2>Today's Classes</h2>
-            <ul class="classes-list" id="todayClasses">
-                <!-- Classes will be dynamically added here -->
-            </ul>
-        </section>
-
-        <!-- Attendance History -->
-        <section class="history-section">
-            <h2>Attendance History</h2>
-            <div class="history-table-container">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Course</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendanceHistory">
-                        <!-- Attendance records will be dynamically added here -->
-                    </tbody>
-                </table>
+            <div class="button-container">
+                <button class="modern-submit-btn" onclick="openPasswordModal()" style="display: none;" id="dropButton">Drop Selected Courses</button>
             </div>
         </section>
     </main>

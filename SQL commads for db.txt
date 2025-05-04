@@ -25,13 +25,24 @@ CREATE TABLE courses (
     credit_hours INT
 );
 
-enrollment table (if tracking registered courses)
-CREATE TABLE enrollments (
+CREATE TABLE course_enrollments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT,
-    course_id INT,
-    semester VARCHAR(20),
-    academic_year VARCHAR(20),
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+    user_id INT NOT NULL,
+    course_code VARCHAR(10) NOT NULL,
+    enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
+    UNIQUE (user_id, course_code)
 );
+
+CREATE TABLE `course_assignments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `course_code` varchar(10) NOT NULL,
+  `lecturer_id` int NOT NULL,
+  `assigned_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_assignment` (`course_code`,`lecturer_id`),
+  KEY `lecturer_id` (`lecturer_id`),
+  CONSTRAINT `course_assignments_ibfk_1` FOREIGN KEY (`course_code`) REFERENCES `courses` (`course_code`) ON DELETE CASCADE,
+  CONSTRAINT `course_assignments_ibfk_2` FOREIGN KEY (`lecturer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+)

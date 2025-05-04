@@ -1,7 +1,5 @@
-// Global variables
 let currentUser = null;
 
-// Fetch lecturer data from PHP backend
 async function fetchLecturerData() {
     try {
         const response = await fetch('lecturer-dashboard.php', {
@@ -11,8 +9,6 @@ async function fetchLecturerData() {
         
         if (data.success) {
             currentUser = data.user;
-            
-            // Update UI with user data
             document.getElementById('userName').textContent = currentUser.full_name;
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=64`;
             document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser.full_name.split(' ')[0]}!`;
@@ -25,7 +21,6 @@ async function fetchLecturerData() {
     }
 }
 
-// View Class Schedule
 async function viewClassSchedule() {
     try {
         const response = await fetch('api/courses.php', {
@@ -59,74 +54,13 @@ function closeScheduleModal() {
     document.getElementById('scheduleModal').style.display = 'none';
 }
 
-// View Student List
-async function viewStudentList() {
-    try {
-        const response = await fetch('api/courses.php', {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            const courseSelect = document.getElementById('courseSelect');
-            courseSelect.innerHTML = '<option value="">Select Course</option>';
-            
-            data.data.forEach(course => {
-                const option = document.createElement('option');
-                option.value = course.id;
-                option.textContent = course.name;
-                courseSelect.appendChild(option);
-            });
-            
-            document.getElementById('studentsModal').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error loading courses:', error);
-        alert('Failed to load courses');
-    }
+function viewStudentList() {
+    window.location.href = 'view-students.html';
 }
 
-// Load students for selected course
-async function loadStudentsForCourse(courseId) {
-    try {
-        const response = await fetch(`api/courses.php?course_id=${courseId}&action=students`, {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            const studentsList = document.getElementById('studentsList');
-            studentsList.innerHTML = '';
-            
-            data.students.forEach(student => {
-                const div = document.createElement('div');
-                div.className = 'student-item';
-                div.innerHTML = `
-                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=random&color=fff&size=64" 
-                         alt="${student.full_name}'s avatar"
-                         class="student-avatar">
-                    <div>
-                        <h4>${student.full_name}</h4>
-                        <p>${student.email}</p>
-                    </div>
-                `;
-                studentsList.appendChild(div);
-            });
-        }
-    } catch (error) {
-        console.error('Error loading students:', error);
-        alert('Failed to load students');
-    }
-}
-
-function closeStudentsModal() {
-    document.getElementById('studentsModal').style.display = 'none';
-}
-
-// Download Attendance Report
 async function downloadAttendanceReport() {
     try {
-        const response = await fetch('api/attendance.php?action=report', {
+        const response = await fetch('attendance.php?action=report', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -153,7 +87,6 @@ async function downloadAttendanceReport() {
     }
 }
 
-// Generate attendance code
 async function generateCode() {
     const courseId = document.getElementById('courseSelect').value;
     if (!courseId) {
@@ -188,7 +121,6 @@ async function generateCode() {
     }
 }
 
-// Timer for attendance code
 function startCodeTimer() {
     let timeLeft = 300;
     const timerDisplay = document.getElementById('codeTimer');
@@ -206,7 +138,6 @@ function startCodeTimer() {
     }, 1000);
 }
 
-// Modal controls
 function showGenerateCodeModal() {
     document.getElementById('generateCodeModal').style.display = 'block';
 }
@@ -215,10 +146,9 @@ function closeGenerateCodeModal() {
     document.getElementById('generateCodeModal').style.display = 'none';
 }
 
-// Fetch courses for dropdown
 async function fetchCourses() {
     try {
-        const response = await fetch('api/courses.php', {
+        const response = await fetch('courses.php', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -238,7 +168,6 @@ async function fetchCourses() {
     }
 }
 
-// Fetch attendance statistics
 async function fetchAttendanceStats() {
     try {
         const response = await fetch('api/attendance.php?action=stats', {
@@ -256,7 +185,6 @@ async function fetchAttendanceStats() {
     }
 }
 
-// Fetch today's attendance
 async function fetchTodayAttendance() {
     try {
         const response = await fetch('api/attendance.php?action=today', {
@@ -285,7 +213,6 @@ async function fetchTodayAttendance() {
     }
 }
 
-// View attendance details
 async function viewAttendanceDetails(courseId) {
     try {
         const response = await fetch(`api/attendance.php?action=details&course_id=${courseId}`, {
@@ -302,23 +229,12 @@ async function viewAttendanceDetails(courseId) {
     }
 }
 
-// Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
     fetchLecturerData();
     fetchCourses();
     fetchAttendanceStats();
     fetchTodayAttendance();
 
-    // Event listener for course selection change
-    document.getElementById('courseSelect').addEventListener('change', (e) => {
-        if (e.target.value) {
-            loadStudentsForCourse(e.target.value);
-        } else {
-            document.getElementById('studentsList').innerHTML = '';
-        }
-    });
-
-    // Refresh data every 5 minutes
     setInterval(() => {
         fetchAttendanceStats();
         fetchTodayAttendance();
