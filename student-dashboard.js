@@ -1,7 +1,5 @@
-// Global variables
 let currentUser = null;
 
-// Fetch user data from PHP backend
 async function fetchUserData() {
     try {
         const response = await fetch('student-dashboard.php', {
@@ -11,13 +9,9 @@ async function fetchUserData() {
         
         if (data.success) {
             currentUser = data.user;
-            
-            // Update UI with user data
             document.getElementById('userName').textContent = currentUser.full_name;
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=64`;
             document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser.full_name.split(' ')[0]}!`;
-            
-            // Set popup content
             document.getElementById('popupUserName').textContent = currentUser.full_name;
             document.getElementById('popupUserAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=128`;
             document.getElementById('popupUserEmail').textContent = currentUser.email;
@@ -33,45 +27,57 @@ async function fetchUserData() {
     }
 }
 
-// Mark attendance using attendance code
 async function markAttendance() {
-    const attendanceCode = document.getElementById('attendanceCode').value;
-    if (!attendanceCode) {
-        alert('Please enter the attendance code');
+    const attendanceCode = document.getElementById('attendanceCode').value.trim().toUpperCase();
+    if (!attendanceCode || attendanceCode.length !== 6) {
+        alert('Please enter a valid 6-character attendance code');
         return;
     }
 
     try {
-        const response = await fetch('api/attendance/mark.php', {
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        });
+
+        const { latitude, longitude } = position.coords;
+
+        const response = await fetch('api/attendance.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ attendance_code: attendanceCode })
+            body: JSON.stringify({
+                action: 'submit_attendance',
+                code: attendanceCode,
+                latitude: latitude,
+                longitude: longitude
+            })
         });
 
         const data = await response.json();
         if (data.success) {
-            alert('Attendance marked successfully!');
+            alert('Attendance recorded successfully!');
             document.getElementById('attendanceCode').value = '';
-            // Refresh the displays
             fetchAttendanceStats();
             fetchTodayClasses();
             fetchAttendanceHistory();
         } else {
-            alert(data.message || 'Failed to mark attendance. Please check the code and try again.');
+            alert(data.message || 'Failed to record attendance');
         }
     } catch (error) {
-        console.error('Error marking attendance:', error);
-        alert('An error occurred while marking attendance. Please try again.');
+        console.error('Error submitting attendance:', error);
+        alert('Failed to get location or submit attendance. Please enable location services and try again.');
     }
 }
 
-// Fetch and display attendance statistics
 async function fetchAttendanceStats() {
     try {
-        const response = await fetch('api/attendance/stats.php', {
+        const response = await fetch('api/attendance.php?action=stats', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -86,10 +92,9 @@ async function fetchAttendanceStats() {
     }
 }
 
-// Fetch and display today's classes
 async function fetchTodayClasses() {
     try {
-        const response = await fetch('api/courses/today.php', {
+        const response = await fetch('api/attendance.php?action=today', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -121,10 +126,9 @@ async function fetchTodayClasses() {
     }
 }
 
-// Fetch and display attendance history
 async function fetchAttendanceHistory() {
     try {
-        const response = await fetch('api/attendance/history.php', {
+        const response = await fetch('api/attendance.php?action=history', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -151,23 +155,19 @@ async function fetchAttendanceHistory() {
     }
 }
 
-// Show profile popup
 function showProfilePopup() {
     document.getElementById('profilePopup').classList.add('active');
 }
 
-// Hide profile popup
 function hideProfilePopup() {
     document.getElementById('profilePopup').classList.remove('active');
 }
 
-// Toggle mobile menu
 function toggleMobileMenu() {
     const mobileMenu = document.querySelector('.mobile-menu');
     mobileMenu.classList.toggle('active');
 }
 
-// Close menu when clicking outside
 function setupClickOutsideMenu() {
     document.addEventListener('click', (e) => {
         const mobileMenu = document.querySelector('.mobile-menu');
@@ -181,26 +181,22 @@ function setupClickOutsideMenu() {
     });
 }
 
-// Navigate to course enrollment page
 function showCourseEnrollment() {
     window.location.href = 'enroll-courses.html';
     document.querySelector('.mobile-menu').classList.remove('active');
 }
 
-// Navigate to registered courses page
 function showRegisteredCourses() {
     window.location.href = 'registered-courses.html';
     document.querySelector('.mobile-menu').classList.remove('active');
 }
 
-// Initialize the dashboard
 document.addEventListener('DOMContentLoaded', () => {
     fetchUserData();
     fetchAttendanceStats();
     fetchTodayClasses();
     fetchAttendanceHistory();
 
-    // Add event listeners for profile popup
     document.querySelector('.user-profile').addEventListener('click', showProfilePopup);
     document.querySelector('.close-popup-btn').addEventListener('click', hideProfilePopup);
     document.getElementById('profilePopup').addEventListener('click', function(e) {
@@ -209,17 +205,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add event listener for hamburger menu
     document.querySelector('.hamburger-btn').addEventListener('click', toggleMobileMenu);
-
-    // Add click handlers for menu items
     document.querySelector('.mobile-menu-item.enroll-link').addEventListener('click', showCourseEnrollment);
     document.querySelector('.mobile-menu-item.registered-link').addEventListener('click', showRegisteredCourses);
 
-    // Setup click outside menu to close
     setupClickOutsideMenu();
 
-    // Refresh data every 5 minutes
     setInterval(() => {
         fetchAttendanceStats();
         fetchTodayClasses();

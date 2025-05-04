@@ -21,37 +21,8 @@ async function fetchLecturerData() {
     }
 }
 
-async function viewClassSchedule() {
-    try {
-        const response = await fetch('api/courses.php', {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            const scheduleList = document.getElementById('scheduleList');
-            scheduleList.innerHTML = '';
-            
-            data.data.forEach(course => {
-                const div = document.createElement('div');
-                div.className = 'schedule-item';
-                div.innerHTML = `
-                    <h4>${course.name}</h4>
-                    <p><i class="fas fa-clock"></i> ${course.schedule}</p>
-                `;
-                scheduleList.appendChild(div);
-            });
-            
-            document.getElementById('scheduleModal').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error fetching schedule:', error);
-        alert('Failed to load schedule');
-    }
-}
-
-function closeScheduleModal() {
-    document.getElementById('scheduleModal').style.display = 'none';
+function viewClassSchedule() {
+    window.location.href = 'view-schedule.html';
 }
 
 function viewStudentList() {
@@ -88,8 +59,8 @@ async function downloadAttendanceReport() {
 }
 
 async function generateCode() {
-    const courseId = document.getElementById('courseSelect').value;
-    if (!courseId) {
+    const courseCode = document.getElementById('courseSelect').value;
+    if (!courseCode) {
         alert('Please select a course');
         return;
     }
@@ -103,7 +74,7 @@ async function generateCode() {
             credentials: 'include',
             body: JSON.stringify({ 
                 action: 'generate_code',
-                course_id: courseId 
+                course_code: courseCode 
             })
         });
 
@@ -148,7 +119,7 @@ function closeGenerateCodeModal() {
 
 async function fetchCourses() {
     try {
-        const response = await fetch('courses.php', {
+        const response = await fetch('api/attendance.php?action=courses', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -156,9 +127,11 @@ async function fetchCourses() {
         if (data.success) {
             const courseSelect = document.getElementById('courseSelect');
             const courseFilter = document.getElementById('courseFilter');
+            courseSelect.innerHTML = '<option value="">Select Course</option>';
+            courseFilter.innerHTML = '<option value="">All Courses</option>';
             
-            data.data.forEach(course => {
-                const option = new Option(course.name, course.id);
+            data.courses.forEach(course => {
+                const option = new Option(`${course.course_code} - ${course.course_name}`, course.course_code);
                 courseSelect.add(option.cloneNode(true));
                 courseFilter.add(option.cloneNode(true));
             });
@@ -176,7 +149,7 @@ async function fetchAttendanceStats() {
         const data = await response.json();
         
         if (data.success) {
-            document.getElementById('totalStudents').textContent = data.stats.total_students;
+            document.getElementById('totalStudents').textContent = data.stats.total_students || 0;
             document.getElementById('todayClasses').textContent = data.stats.today_classes;
             document.getElementById('avgAttendance').textContent = data.stats.average_attendance + '%';
         }
@@ -203,25 +176,25 @@ async function fetchTodayAttendance() {
                     <td>${record.time}</td>
                     <td class="text-green-600">${record.present_count}</td>
                     <td class="text-red-600">${record.absent_count}</td>
-                    <td><button onclick="viewAttendanceDetails(${record.course_id})" class="text-blue-600">View Details</button></td>
+                    <td><button onclick="viewAttendanceDetails('${record.course_code}')" class="text-blue-600">View Details</button></td>
                 `;
                 attendanceTable.appendChild(tr);
             });
         }
     } catch (error) {
-        console.error('Error fetching today\'s attendance:', error);
+        console.error("Error fetching today's attendance:", error);
     }
 }
 
-async function viewAttendanceDetails(courseId) {
+async function viewAttendanceDetails(courseCode) {
     try {
-        const response = await fetch(`api/attendance.php?action=details&course_id=${courseId}`, {
+        const response = await fetch(`api/attendance.php?action=details&course_code=${courseCode}`, {
             credentials: 'include'
         });
         const data = await response.json();
         
         if (data.success) {
-            alert(`Attendance details for course ${courseId}:\n\n${JSON.stringify(data.details, null, 2)}`);
+            alert(`Attendance details for course ${courseCode}:\n\n${JSON.stringify(data.details, null, 2)}`);
         }
     } catch (error) {
         console.error('Error fetching attendance details:', error);

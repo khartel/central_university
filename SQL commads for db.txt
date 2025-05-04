@@ -46,3 +46,51 @@ CREATE TABLE `course_assignments` (
   CONSTRAINT `course_assignments_ibfk_1` FOREIGN KEY (`course_code`) REFERENCES `courses` (`course_code`) ON DELETE CASCADE,
   CONSTRAINT `course_assignments_ibfk_2` FOREIGN KEY (`lecturer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 )
+
+CREATE TABLE timetable (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_code VARCHAR(10) NOT NULL,
+    level VARCHAR(20) NOT NULL,
+    day_of_week ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    venue VARCHAR(50) NOT NULL,
+    lecturer_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
+    FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Add latitude and longitude to timetable
+ALTER TABLE timetable
+ADD latitude DECIMAL(9,6) NULL,
+ADD longitude DECIMAL(9,6) NULL;
+
+-- Create attendance_codes table
+CREATE TABLE attendance_codes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_code VARCHAR(10) NOT NULL,
+    code VARCHAR(6) NOT NULL,
+    venue VARCHAR(50) NOT NULL,
+    latitude DECIMAL(9,6) NOT NULL,
+    longitude DECIMAL(9,6) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    lecturer_id INT NOT NULL,
+    FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
+    FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create attendance table
+CREATE TABLE attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    course_code VARCHAR(10) NOT NULL,
+    attendance_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('present', 'absent') DEFAULT 'present',
+    latitude DECIMAL(9,6) NULL,
+    longitude DECIMAL(9,6) NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
+    UNIQUE (user_id, course_code, attendance_date)
+);

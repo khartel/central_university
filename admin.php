@@ -420,6 +420,19 @@ $_SESSION['admin_last_activity'] = time();
                 </p>
                 <div class="action-btn">Manage Assignments</div>
             </div>
+
+            <!-- Create Timetable -->
+            <div class="action-card" onclick="window.location.href='admin_timetable.php'">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="action-title">Create Timetable</h3>
+                <p class="action-description">
+                    Create and manage course timetables for each level. Assign courses to specific days, 
+                    times, and venues, and assign lecturers to each session.
+                </p>
+                <div class="action-btn">Manage Timetable</div>
+            </div>
         </div>
     </main>
 
