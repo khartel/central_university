@@ -1,4 +1,5 @@
-﻿CREATE TABLE users (
+﻿-- Create users table
+CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     index_no VARCHAR(20) UNIQUE,
     full_name VARCHAR(100) NOT NULL,
@@ -8,6 +9,7 @@
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create students table
 CREATE TABLE students (
     id INT AUTO_INCREMENT PRIMARY KEY,
     index_no VARCHAR(20) UNIQUE,
@@ -18,6 +20,7 @@ CREATE TABLE students (
     FOREIGN KEY (index_no) REFERENCES users(index_no) ON DELETE CASCADE
 );
 
+-- Create courses table
 CREATE TABLE courses (
     course_code VARCHAR(10) NOT NULL PRIMARY KEY,
     course_name VARCHAR(100),
@@ -25,6 +28,7 @@ CREATE TABLE courses (
     credit_hours INT
 );
 
+-- Create course_enrollments table
 CREATE TABLE course_enrollments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -35,18 +39,20 @@ CREATE TABLE course_enrollments (
     UNIQUE (user_id, course_code)
 );
 
-CREATE TABLE `course_assignments` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `course_code` varchar(10) NOT NULL,
-  `lecturer_id` int NOT NULL,
-  `assigned_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_assignment` (`course_code`,`lecturer_id`),
-  KEY `lecturer_id` (`lecturer_id`),
-  CONSTRAINT `course_assignments_ibfk_1` FOREIGN KEY (`course_code`) REFERENCES `courses` (`course_code`) ON DELETE CASCADE,
-  CONSTRAINT `course_assignments_ibfk_2` FOREIGN KEY (`lecturer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-)
+-- Create course_assignments table
+CREATE TABLE course_assignments (
+    id INT NOT NULL AUTO_INCREMENT,
+    course_code VARCHAR(10) NOT NULL,
+    lecturer_id INT NOT NULL,
+    assigned_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY unique_assignment (course_code, lecturer_id),
+    KEY lecturer_id (lecturer_id),
+    CONSTRAINT course_assignments_ibfk_1 FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
+    CONSTRAINT course_assignments_ibfk_2 FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
+-- Create timetable table
 CREATE TABLE timetable (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_code VARCHAR(10) NOT NULL,
@@ -57,19 +63,11 @@ CREATE TABLE timetable (
     venue VARCHAR(50) NOT NULL,
     lecturer_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    latitude DECIMAL(9,6) NULL,
+    longitude DECIMAL(9,6) NULL,
     FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE SET NULL
 );
-
--- Check if longitude column exists in timetable and add if not
-SET @longitude_exists = (SELECT COUNT(*) FROM information_schema.columns 
-                         WHERE table_name = 'timetable' AND column_name = 'longitude');
-SET @sql = IF(@longitude_exists = 0, 
-              'ALTER TABLE timetable ADD longitude DECIMAL(9,6) NULL', 
-              'SELECT ''longitude column already exists'' AS message');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
 
 -- Create attendance_codes table if it doesn't exist
 CREATE TABLE IF NOT EXISTS attendance_codes (
