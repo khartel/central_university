@@ -31,7 +31,7 @@ async function fetchUserData() {
 
 async function fetchAllCourses() {
     try {
-        const response = await fetch('all.php', {
+        const response = await fetch('api/all.php', {
             credentials: 'include'
         });
         const data = await response.json();

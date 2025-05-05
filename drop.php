@@ -2,7 +2,7 @@
 session_start();
 include 'db.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+if (!isset($_SESSION['user_id']) ) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
@@ -12,8 +12,13 @@ $data = json_decode(file_get_contents('php://input'), true);
 $password = $data['password'] ?? '';
 $courses = $data['courses'] ?? [];
 
-if (empty($password) || empty($courses)) {
-    echo json_encode(['success' => false, 'message' => 'Password and course selection are required']);
+if (empty($password)){
+    echo json_encode(['success' => false, 'message' => 'Password is required']);
+    exit();
+}
+
+if (empty($courses)) {
+    echo json_encode(['success' => false, 'message' => 'Course selection is required']);
     exit();
 }
 
@@ -24,22 +29,32 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-if (!password_verify($password, $user['password'])) {
+if (!$user || !password_verify($password, $user['password'])) {
     echo json_encode(['success' => false, 'message' => 'Invalid password']);
     exit();
 }
 
-// Drop courses
+// Prepare the DELETE statement
 $placeholders = implode(',', array_fill(0, count($courses), '?'));
-$stmt = $conn->prepare("DELETE FROM course_enrollments WHERE user_id = ? AND course_code IN ($placeholders)");
+$query = "DELETE FROM course_enrollments WHERE user_id = ? AND course_code IN ($placeholders)";
+$stmt = $conn->prepare($query);
+
+// Build types and parameters correctly
+$types = 'i' . str_repeat('s', count($courses)); // 'i' for user_id, 's' for each course code
 $params = array_merge([$user_id], $courses);
-$types = str_repeat('s', count($courses)) . 'i';
-$stmt->bind_param($types, ...array_reverse($params));
+
+// Bind parameters
+$stmt->bind_param($types, ...$params);
+
+// Execute
 $stmt->execute();
 
 if ($stmt->affected_rows > 0) {
-    echo json_encode(['success' => true]);
+    echo json_encode(['success' => true, 'message' => 'Courses dropped successfully']);
 } else {
-    echo json_encode(['success' => false, 'message' => 'No courses were dropped']);
+    echo json_encode(['success' => false, 'message' => 'No courses were dropped or courses not found']);
 }
+
+$stmt->close();
+$conn->close();
 ?>
