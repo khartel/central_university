@@ -1,4 +1,7 @@
-﻿-- Create users table
+-- Drop attendance_codes table if it exists to avoid conflicts
+DROP TABLE IF EXISTS attendance_codes;
+
+-- Create users table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     index_no VARCHAR(20) UNIQUE,
@@ -7,7 +10,7 @@ CREATE TABLE users (
     password VARCHAR(255) NULL,
     role ENUM('student', 'lecturer') DEFAULT 'student',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB;
 
 -- Create students table
 CREATE TABLE students (
@@ -18,7 +21,7 @@ CREATE TABLE students (
     program VARCHAR(100) NOT NULL,
     level VARCHAR(50) NOT NULL,
     FOREIGN KEY (index_no) REFERENCES users(index_no) ON DELETE CASCADE
-);
+) ENGINE=InnoDB;
 
 -- Create courses table
 CREATE TABLE courses (
@@ -26,7 +29,7 @@ CREATE TABLE courses (
     course_name VARCHAR(100),
     level VARCHAR(20),
     credit_hours INT
-);
+) ENGINE=InnoDB;
 
 -- Create course_enrollments table
 CREATE TABLE course_enrollments (
@@ -37,7 +40,7 @@ CREATE TABLE course_enrollments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     UNIQUE (user_id, course_code)
-);
+) ENGINE=InnoDB;
 
 -- Create course_assignments table
 CREATE TABLE course_assignments (
@@ -50,7 +53,7 @@ CREATE TABLE course_assignments (
     KEY lecturer_id (lecturer_id),
     CONSTRAINT course_assignments_ibfk_1 FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     CONSTRAINT course_assignments_ibfk_2 FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB;
 
 -- Create timetable table
 CREATE TABLE timetable (
@@ -67,10 +70,10 @@ CREATE TABLE timetable (
     longitude DECIMAL(9,6) NULL,
     FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE SET NULL
-);
+) ENGINE=InnoDB;
 
--- Create attendance_codes table if it doesn't exist
-CREATE TABLE IF NOT EXISTS attendance_codes (
+-- Create attendance_codes table
+CREATE TABLE attendance_codes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_code VARCHAR(10) NOT NULL,
     code VARCHAR(6) NOT NULL,
@@ -78,13 +81,13 @@ CREATE TABLE IF NOT EXISTS attendance_codes (
     latitude DECIMAL(9,6) NOT NULL,
     longitude DECIMAL(9,6) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lecturer_id INT NOT NULL,
     FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB;
 
--- Create attendance table if it doesn't exist
+-- Create attendance table
 CREATE TABLE IF NOT EXISTS attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -96,4 +99,4 @@ CREATE TABLE IF NOT EXISTS attendance (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     UNIQUE (user_id, course_code, attendance_date)
-);
+) ENGINE=InnoDB;
