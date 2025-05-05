@@ -61,13 +61,18 @@ CREATE TABLE timetable (
     FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Add latitude and longitude to timetable
-ALTER TABLE timetable
-ADD latitude DECIMAL(9,6) NULL,
-ADD longitude DECIMAL(9,6) NULL;
+-- Check if longitude column exists in timetable and add if not
+SET @longitude_exists = (SELECT COUNT(*) FROM information_schema.columns 
+                         WHERE table_name = 'timetable' AND column_name = 'longitude');
+SET @sql = IF(@longitude_exists = 0, 
+              'ALTER TABLE timetable ADD longitude DECIMAL(9,6) NULL', 
+              'SELECT ''longitude column already exists'' AS message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- Create attendance_codes table
-CREATE TABLE attendance_codes (
+-- Create attendance_codes table if it doesn't exist
+CREATE TABLE IF NOT EXISTS attendance_codes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_code VARCHAR(10) NOT NULL,
     code VARCHAR(6) NOT NULL,
@@ -81,8 +86,8 @@ CREATE TABLE attendance_codes (
     FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create attendance table
-CREATE TABLE attendance (
+-- Create attendance table if it doesn't exist
+CREATE TABLE IF NOT EXISTS attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     course_code VARCHAR(10) NOT NULL,
