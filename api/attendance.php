@@ -96,8 +96,7 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
         SELECT 
             COUNT(DISTINCT t.id) as total,
             COUNT(DISTINCT a.id) as attended,
-            COUNT(DISTINCT t.id) - COUNT(DISTINCT a.id) as missed,
-            IF(COUNT(DISTINCT t.id) > 0, (COUNT(DISTINCT a.id) / COUNT(DISTINCT t.id)) * 100, 0) as rate
+            COUNT(DISTINCT t.id) - COUNT(DISTINCT a.id) as missed
         FROM timetable t
         JOIN course_enrollments ce ON t.course_code = ce.course_code
         LEFT JOIN attendance a ON t.course_code = a.course_code AND a.user_id = ce.user_id
@@ -107,7 +106,15 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
     $stmt->execute();
     $result = $stmt->get_result();
     $stats = $result->fetch_assoc();
-    $stats['rate'] = round($stats['rate'], 1);
+    
+    // Ensure counts are non-negative
+    $stats['total'] = max(0, $stats['total']);
+    $stats['attended'] = max(0, $stats['attended']);
+    $stats['missed'] = max(0, $stats['missed']);
+    
+    // Calculate rate, cap at 100%
+    $stats['rate'] = $stats['total'] > 0 ? min(100, round(($stats['attended'] / $stats['total']) * 100, 1)) : 0;
+    
     $stmt->close();
 
     echo json_encode([
