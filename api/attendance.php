@@ -383,9 +383,9 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
     $code_longitude = $code_data['longitude'];
     $stmt->close();
 
-    // Geolocation check (within ~100 meters)
+    // Geolocation check (within ~1000 meters)
     $distance = calculateDistance($student_lat, $student_lon, $code_latitude, $code_longitude);
-    if ($distance > 0.1) { // 0.1 km = 100 meters
+    if ($distance > 1.0) { // 1.0 km = 1000 meters
         echo json_encode(['success' => false, 'message' => 'You are not at the correct location']);
         exit;
     }
