@@ -81,14 +81,24 @@ async function fetchAttendanceStats() {
             credentials: 'include'
         });
         const data = await response.json();
-        if (data.success) {
-            document.getElementById('attendanceRate').textContent = data.stats.rate + '%';
-            document.getElementById('totalClasses').textContent = data.stats.total;
-            document.getElementById('classesAttended').textContent = data.stats.attended;
-            document.getElementById('classesMissed').textContent = data.stats.missed;
+        if (data.success && data.stats) {
+            document.getElementById('attendanceRate').textContent = (data.stats.rate || 0) + '%';
+            document.getElementById('totalClasses').textContent = data.stats.total || 0;
+            document.getElementById('classesAttended').textContent = data.stats.attended || 0;
+            document.getElementById('classesMissed').textContent = data.stats.missed || 0;
+        } else {
+            console.error('Failed to fetch attendance stats:', data.message || 'No data returned');
+            document.getElementById('attendanceRate').textContent = '0%';
+            document.getElementById('totalClasses').textContent = '0';
+            document.getElementById('classesAttended').textContent = '0';
+            document.getElementById('classesMissed').textContent = '0';
         }
     } catch (error) {
         console.error('Error fetching attendance stats:', error);
+        document.getElementById('attendanceRate').textContent = '0%';
+        document.getElementById('totalClasses').textContent = '0';
+        document.getElementById('classesAttended').textContent = '0';
+        document.getElementById('classesMissed').textContent = '0';
     }
 }
 
@@ -169,7 +179,7 @@ function toggleMobileMenu() {
 }
 
 function setupClickOutsideMenu() {
-    document.addEventListener('click', (e) => {
+    document.addEventListener(' click', (e) => {
         const mobileMenu = document.querySelector('.mobile-menu');
         const hamburgerBtn = document.querySelector('.hamburger-btn');
         

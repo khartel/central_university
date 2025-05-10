@@ -29,33 +29,8 @@ function viewStudentList() {
     window.location.href = 'view-students.html';
 }
 
-async function downloadAttendanceReport() {
-    try {
-        const response = await fetch('attendance.php?action=report', {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            let csv = 'Course,Date,Student,Status\n';
-            data.attendance.forEach(record => {
-                csv += `${record.course_name},${record.date},${record.student_name},${record.status}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'attendance_report.csv';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        }
-    } catch (error) {
-        console.error('Error downloading report:', error);
-        alert('Failed to download report');
-    }
+function downloadAttendanceReport() {
+    window.location.href = 'download-report.html';
 }
 
 async function generateCode() {
@@ -74,7 +49,7 @@ async function generateCode() {
             credentials: 'include',
             body: JSON.stringify({ 
                 action: 'generate_code',
-                course_code: courseCode 
+                course_code: courseCode
             })
         });
 
@@ -84,11 +59,12 @@ async function generateCode() {
             document.getElementById('attendanceCode').textContent = data.code;
             startCodeTimer();
         } else {
-            alert(data.message || 'Failed to generate attendance code');
+            console.error('Failed to generate code:', data.message);
+            alert(data.message || 'Failed to generate attendance code. Please try again.');
         }
     } catch (error) {
         console.error('Error generating attendance code:', error);
-        alert('An error occurred while generating the code');
+        alert('An error occurred while generating the code. Check your connection and try again.');
     }
 }
 
@@ -135,6 +111,8 @@ async function fetchCourses() {
                 courseSelect.add(option.cloneNode(true));
                 courseFilter.add(option.cloneNode(true));
             });
+        } else {
+            console.error('Failed to fetch courses:', data.message);
         }
     } catch (error) {
         console.error('Error fetching courses:', error);
@@ -152,6 +130,8 @@ async function fetchAttendanceStats() {
             document.getElementById('totalStudents').textContent = data.stats.total_students || 0;
             document.getElementById('todayClasses').textContent = data.stats.today_classes;
             document.getElementById('avgAttendance').textContent = data.stats.average_attendance + '%';
+        } else {
+            console.error('Failed to fetch attendance stats:', data.message);
         }
     } catch (error) {
         console.error('Error fetching attendance stats:', error);
@@ -165,41 +145,37 @@ async function fetchTodayAttendance() {
         });
         const data = await response.json();
         
+        const attendanceTable = document.getElementById('attendanceTable');
+        attendanceTable.innerHTML = '';
+        
         if (data.success) {
-            const attendanceTable = document.getElementById('attendanceTable');
-            attendanceTable.innerHTML = '';
-
-            data.attendance.forEach(record => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${record.course_name}</td>
-                    <td>${record.time}</td>
-                    <td class="text-green-600">${record.present_count}</td>
-                    <td class="text-red-600">${record.absent_count}</td>
-                    <td><button onclick="viewAttendanceDetails('${record.course_code}')" class="text-blue-600">View Details</button></td>
-                `;
-                attendanceTable.appendChild(tr);
-            });
+            if (data.attendance.length === 0) {
+                attendanceTable.innerHTML = '<tr><td colspan="5" class="text-center">No classes scheduled for today</td></tr>';
+            } else {
+                data.attendance.forEach(record => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${record.course_name}</td>
+                        <td>${record.time}</td>
+                        <td class="text-green-600">${record.present_count}</td>
+                        <td class="text-red-600">${record.absent_count}</td>
+                        <td><button onclick="viewAttendanceDetails('${record.course_code}')" class="text-blue-600">View Details</button></td>
+                    `;
+                    attendanceTable.appendChild(tr);
+                });
+            }
+        } else {
+            console.error('Failed to fetch today\'s attendance:', data.message);
+            attendanceTable.innerHTML = '<tr><td colspan="5" class="text-center">Error fetching data</td></tr>';
         }
     } catch (error) {
         console.error("Error fetching today's attendance:", error);
+        document.getElementById('attendanceTable').innerHTML = '<tr><td colspan="5" class="text-center">Error fetching data</td></tr>';
     }
 }
 
-async function viewAttendanceDetails(courseCode) {
-    try {
-        const response = await fetch(`api/attendance.php?action=details&course_code=${courseCode}`, {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            alert(`Attendance details for course ${courseCode}:\n\n${JSON.stringify(data.details, null, 2)}`);
-        }
-    } catch (error) {
-        console.error('Error fetching attendance details:', error);
-        alert('Failed to load attendance details');
-    }
+function viewAttendanceDetails(courseCode) {
+    window.location.href = `view-attendance-details.html?course_code=${encodeURIComponent(courseCode)}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
