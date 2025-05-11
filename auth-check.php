@@ -2,14 +2,14 @@
 session_start();
 header('Content-Type: application/json');
 
-// Define allowed roles for different dashboards
+// Define allowed roles for dashboard pages
 $allowedRoles = [
     'lecturer-dashboard.html' => ['lecturer'],
     'student-dashboard.html' => ['student']
 ];
 
-// Get the requested page (from HTTP Referer or other method)
-$requestedPage = basename(parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) ?? '');
+// Get the requested page from X-Requested-Page header
+$requestedPage = $_SERVER['HTTP_X_REQUESTED_PAGE'] ?? basename(parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH) ?? '');
 
 // Default response
 $response = [
@@ -34,6 +34,9 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
         // Check if user's role is allowed for the requested page
         if (isset($allowedRoles[$requestedPage])) {
             $response['allowed'] = in_array($_SESSION['role'], $allowedRoles[$requestedPage]);
+        } else {
+            // Allow access for non-restricted pages
+            $response['allowed'] = true;
         }
     } else {
         // User doesn't exist or role changed
@@ -44,6 +47,8 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
             'allowed' => false
         ];
     }
+    $stmt->close();
+    $conn->close();
 }
 
 echo json_encode($response);

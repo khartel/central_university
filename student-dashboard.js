@@ -81,7 +81,9 @@ async function fetchAttendanceStats() {
             credentials: 'include'
         });
         const data = await response.json();
-        if (data.success && data.stats) {
+        if (data.success && data.stats
+
+) {
             document.getElementById('attendanceRate').textContent = (data.stats.rate || 0) + '%';
             document.getElementById('totalClasses').textContent = data.stats.total || 0;
             document.getElementById('classesAttended').textContent = data.stats.attended || 0;
@@ -179,7 +181,7 @@ function toggleMobileMenu() {
 }
 
 function setupClickOutsideMenu() {
-    document.addEventListener(' click', (e) => {
+    document.addEventListener('click', (e) => {
         const mobileMenu = document.querySelector('.mobile-menu');
         const hamburgerBtn = document.querySelector('.hamburger-btn');
         
@@ -201,6 +203,11 @@ function showRegisteredCourses() {
     document.querySelector('.mobile-menu').classList.remove('active');
 }
 
+function showSchedule() {
+    window.location.href = 'view-schedule-student.html';
+    document.querySelector('.mobile-menu').classList.remove('active');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchUserData();
     fetchAttendanceStats();
@@ -218,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.hamburger-btn').addEventListener('click', toggleMobileMenu);
     document.querySelector('.mobile-menu-item.enroll-link').addEventListener('click', showCourseEnrollment);
     document.querySelector('.mobile-menu-item.registered-link').addEventListener('click', showRegisteredCourses);
+    document.querySelector('.mobile-menu-item.schedule-link').addEventListener('click', showSchedule);
 
     setupClickOutsideMenu();
 

@@ -30,11 +30,33 @@ function checkPassword(input) {
     validateInput(input, 'password-group');
 }
 
+function autoCompleteEmail(input) {
+    const value = input.value;
+    // Check if the input contains '@' and no domain is typed yet
+    if (value.includes('@') && !value.includes('@central.edu.gh') && !value.substring(value.indexOf('@') + 1).includes('.')) {
+        const username = value.substring(0, value.indexOf('@'));
+        input.value = username + '@central.edu.gh';
+        // Move cursor to just before '@central.edu.gh'
+        input.setSelectionRange(username.length, username.length);
+        validateInput(input, 'email-group');
+    } else {
+        validateInput(input, 'email-group');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize form validation
     const emailInput = document.querySelector('input[type="email"]');
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.querySelector('.password-toggle');
+    
+    // Pre-fill email from sessionStorage if available (after signup redirect)
+    if (emailInput && sessionStorage.getItem('signup_email')) {
+        emailInput.value = sessionStorage.getItem('signup_email');
+        validateInput(emailInput, 'email-group');
+        // Clear the stored email to prevent reuse after login
+        sessionStorage.removeItem('signup_email');
+    }
     
     // Initialize password validation if content exists
     if (passwordInput && passwordInput.value) {
@@ -44,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners
     if (emailInput) {
         emailInput.addEventListener('input', function() {
-            validateInput(this, 'email-group');
+            autoCompleteEmail(this);
         });
     }
     
@@ -122,7 +144,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.href = 'dashboard.html';
                     }
                 } else {
-                    errorElement.innerHTML = data.message;
+                    // Append email as query parameter to signup link for "No password set" error
+                    let message = data.message;
+                    if (message.includes('No password set')) {
+                        message = `No password set. Please <a href="signup.html?email=${encodeURIComponent(email)}">create one</a>.`;
+                    }
+                    errorElement.innerHTML = message;
                     errorElement.style.display = 'block';
                 }
             } catch (error) {

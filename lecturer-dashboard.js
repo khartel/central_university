@@ -22,7 +22,7 @@ async function fetchLecturerData() {
 }
 
 function viewClassSchedule() {
-    window.location.href = 'view-schedule.html';
+    window.location.href = 'view-schedule-lecturer.html';
 }
 
 function viewStudentList() {

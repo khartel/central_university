@@ -81,10 +81,12 @@ async function fetchSchedule() {
             }
         } else {
             alert(data.message || 'Failed to load schedule');
+            window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Error fetching schedule:', error);
         alert('Failed to load schedule');
+        window.location.href = 'index.html';
     }
 }
 

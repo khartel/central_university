@@ -1,4 +1,4 @@
-/**Auth Check for Both Student and Lecturer Dashboards**/
+/**Auth Check for Student and Lecturer Dashboards**/
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Show loading state
