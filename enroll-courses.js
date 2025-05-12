@@ -5,38 +5,51 @@ let selectedLevel = null;
 
 async function fetchUserData() {
     try {
+        console.log('Fetching user data from student-dashboard.php');
         const response = await fetch('student-dashboard.php', {
             credentials: 'include'
         });
         const data = await response.json();
-        
+        console.log('User data response:', data);
         if (data.success) {
             currentUser = data.user;
+            console.log('User data loaded:', currentUser);
             document.getElementById('userName').textContent = currentUser.full_name;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=64`;
+            const initials = currentUser.initials || currentUser.full_name.charAt(0);
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=random&color=fff&size=64`;
             document.getElementById('popupUserName').textContent = currentUser.full_name;
-            document.getElementById('popupUserAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.initials)}&background=random&color=fff&size=128`;
+            document.getElementById('popupUserAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=random&color=fff&size=128`;
             document.getElementById('popupUserEmail').textContent = currentUser.email;
             document.getElementById('popupUserIndex').textContent = currentUser.index_no;
             document.getElementById('popupUserProgram').textContent = currentUser.program;
             document.getElementById('popupUserLevel').textContent = currentUser.level;
         } else {
-            window.location.href = 'index.html';
+            console.log('User data fetch failed:', data);
+            alert('Failed to load user data: ' + (data.message || 'Please log in again.'));
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
         }
     } catch (error) {
         console.error('Error fetching user data:', error);
-        window.location.href = 'index.html';
+        alert('Error loading user data. Please check your connection and try again.');
     }
 }
 
 async function fetchAllCourses() {
     try {
+        console.log('Fetching courses from api/all.php');
         const response = await fetch('api/all.php', {
             credentials: 'include'
         });
         const data = await response.json();
+        console.log('Courses response:', data);
         if (data.success) {
-            // Group courses by level
+            if (data.courses.length === 0) {
+                document.getElementById('coursesList').innerHTML = '<p>No courses available for enrollment.</p>';
+                document.getElementById('levelSelector').innerHTML = '<option value="" disabled selected>No levels available</option>';
+                return;
+            }
             coursesByLevel = {};
             data.courses.forEach(course => {
                 if (!coursesByLevel[course.level]) {
@@ -45,9 +58,17 @@ async function fetchAllCourses() {
                 coursesByLevel[course.level].push(course);
             });
             populateLevelDropdown();
+        } else {
+            console.error('Failed to fetch courses:', data.message);
+            document.getElementById('coursesList').innerHTML = '<p>Error loading courses: ' + (data.message || 'Unknown error') + '</p>';
+            alert('Failed to load courses: ' + (data.message || 'Unknown error'));
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
         }
     } catch (error) {
         console.error('Error fetching courses:', error);
+        document.getElementById('coursesList').innerHTML = '<p>Error loading courses. Please try again.</p>';
         alert('Failed to load courses. Please try again.');
     }
 }
@@ -72,7 +93,7 @@ function populateLevelDropdown() {
 
 function selectLevel(level) {
     selectedLevel = level;
-    selectedCourses = []; // Reset selected courses
+    selectedCourses = [];
     const coursesList = document.getElementById('coursesList');
     coursesList.innerHTML = '';
     document.getElementById('enrollButton').style.display = 'block';
@@ -140,7 +161,7 @@ async function verifyPassword() {
             document.getElementById('coursesList').innerHTML = '';
             document.getElementById('enrollButton').style.display = 'none';
             selectedLevel = null;
-            document.getElementById('levelSelector').value = ''; // Reset dropdown
+            document.getElementById('levelSelector').value = '';
         } else {
             alert(data.message || 'Failed to enroll courses. Please check your password and try again.');
         }
@@ -176,6 +197,7 @@ function setupClickOutsideMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, starting fetchUserData and fetchAllCourses');
     fetchUserData();
     fetchAllCourses();
 
@@ -195,6 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.mobile-menu-item.registered-link').addEventListener('click', (e) => {
         e.preventDefault();
         window.location.href = 'registered-courses.html';
+        document.querySelector('.mobile-menu').classList.remove('active');
+    });
+    document.querySelector('.mobile-menu-item.schedule-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'view-schedule-student.html';
         document.querySelector('.mobile-menu').classList.remove('active');
     });
     document.querySelector('.mobile-menu-item.logout-link').addEventListener('click', (e) => {

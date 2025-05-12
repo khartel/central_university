@@ -5,7 +5,7 @@ include 'db.php';
 // Check if user is logged in and is a student
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized', 'redirect' => 'index.html']);
     exit();
 }
 
@@ -29,7 +29,7 @@ $result = $stmt->get_result();
 if ($result->num_rows === 0) {
     session_destroy();
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'User not found']);
+    echo json_encode(['success' => false, 'message' => 'User not found', 'redirect' => 'index.html']);
     exit();
 }
 

@@ -37,7 +37,7 @@ if ($role === 'lecturer') {
         FROM timetable t
         JOIN course_assignments ca ON t.course_code = ca.course_code
         JOIN courses c ON t.course_code = c.course_code
-        LEFT JOIN users u ON t.lecturer_id = u.id
+        LEFT JOIN users u ON ca.lecturer_id = u.id
         WHERE ca.lecturer_id = ?
         ORDER BY FIELD(t.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), t.start_time
     ");
@@ -67,7 +67,8 @@ if ($role === 'lecturer') {
         FROM timetable t
         JOIN course_enrollments ce ON t.course_code = ce.course_code
         JOIN courses c ON t.course_code = c.course_code
-        LEFT JOIN users u ON t.lecturer_id = u.id
+        LEFT JOIN course_assignments ca ON t.course_code = ca.course_code
+        LEFT JOIN users u ON ca.lecturer_id = u.id
         WHERE ce.user_id = ?
         ORDER BY FIELD(t.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), t.start_time
     ");

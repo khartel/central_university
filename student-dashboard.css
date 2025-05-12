@@ -309,15 +309,16 @@ body {
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 0 1.5rem;
+    padding: 0.85rem 2rem; /* Increased padding for larger button */
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem; /* Increased font size for larger appearance */
     font-weight: 500;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .submit-btn:hover {
     background: var(--primary-btn-hover);
+    transform: translateY(-2px);
 }
 
 .form-note {
@@ -512,7 +513,7 @@ body {
 .history-table td {
     padding: 1.25rem 1.5rem;
     border-top: 1px solid var(--border-color);
-    font-size: 0.point95rem;
+    font-size: 0.95rem;
     vertical-align: middle;
     color: var(--text-color);
 }
@@ -691,11 +692,13 @@ body {
 
 #passwordInput {
     width: 100%;
+    max-width: 300px; /* Restrict width to prevent overflow */
+    margin: 1rem auto; /* Center the input horizontally */
+    display: block; /* Ensure it behaves as a block element for centering */
     padding: 0.75rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    margin-top: 1rem;
     background-color: var(--card-bg);
     color: var(--text-color);
     transition: border-color 0.2s;
@@ -734,7 +737,7 @@ body {
     
     .submit-btn {
         width: 100%;
-        padding: 0.75rem;
+        padding: 0.85rem;
     }
 
     .mobile-menu {
@@ -770,6 +773,7 @@ body {
         gap: 12px;
     }
 }
+
 /* Dropdown and Modern Button */
 .level-dropdown {
     width: 100%;

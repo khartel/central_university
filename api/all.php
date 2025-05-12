@@ -3,7 +3,7 @@ session_start();
 include '../db.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized', 'redirect' => 'index.html']);
     exit();
 }
 

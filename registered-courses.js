@@ -173,6 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         document.querySelector('.mobile-menu').classList.remove('active');
     });
+    document.querySelector('.mobile-menu-item.schedule-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'view-schedule-student.html';
+        document.querySelector('.mobile-menu').classList.remove('active');
+    });
     document.querySelector('.mobile-menu-item.logout-link').addEventListener('click', (e) => {
         e.preventDefault();
         window.location.href = 'index.html';

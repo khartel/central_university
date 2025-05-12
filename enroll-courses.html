@@ -41,6 +41,7 @@
             <a href="student-dashboard.html" class="mobile-menu-item"><i class="fas fa-home"></i> Dashboard</a>
             <a class="mobile-menu-item enroll-link"><i class="fas fa-plus-circle"></i> Enroll Courses</a>
             <a href="registered-courses.html" class="mobile-menu-item registered-link"><i class="fas fa-list-alt"></i> Registered Courses</a>
+            <a href="view-schedule-student.html" class="mobile-menu-item schedule-link"><i class="fas fa-calendar-alt"></i> View Schedule</a>
             <a href="index.html" class="mobile-menu-item logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </nav>
@@ -100,7 +101,7 @@
                 <option value="" disabled selected>Select a Course Level</option>
             </select>
             <div class="courses-list" id="coursesList">
-                <!-- Courses will be dynamically added here -->
+                <p>Loading courses...</p>
             </div>
             <div class="button-container">
                 <button class="modern-submit-btn" onclick="openPasswordModal()" style="display: none;" id="enrollButton">Enroll Selected Courses</button>
