@@ -2,85 +2,90 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-  }
-  
-  body {
+}
+
+body {
     font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(to bottom right, #8B1E3F, #D81159, #FF6978);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  .container {
+}
+
+.container {
     background-color: white;
     border-radius: 16px;
     padding: 2rem;
     width: 100%;
     max-width: 400px;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
-  }
-  
-  .signup-box h1 {
+}
+
+.signup-box h1 {
     text-align: center;
     font-size: 2rem;
     margin-bottom: 0.25rem;
     color: #050101;
-  }
-  
-  .signup-box p {
+}
+
+.signup-box p {
     text-align: center;
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
-  }
-  
-  .signup-box a {
+}
+
+.signup-box a {
     color: #972a2a;
     text-decoration: none;
-  }
-  
-  label {
+}
+
+label {
     display: block;
     font-weight: bold;
     margin-bottom: 0.5rem;
-  }
-  
-  input[type="email"],
-  input[type="password"] {
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
     width: 100%;
     padding: 0.75rem;
     margin-bottom: 1.2rem;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
-  }
-  
-  .password-wrapper {
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+.password-wrapper {
     position: relative;
-  }
-  
-  .eye-icon {
+    width: 100%; /* Ensure wrapper takes full width */
+}
+
+.eye-icon {
     position: absolute;
     right: 12px;
-    top: 12px;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust for vertical centering */
     cursor: pointer;
     font-size: 1rem;
-  }
-  
-  .checkbox-container {
+    line-height: 1; /* Prevent line-height from affecting positioning */
+}
+
+.checkbox-container {
     display: flex;
     align-items: flex-start;
     margin-bottom: 1.5rem;
     font-size: 0.85rem;
-  }
-  
-  .checkbox-container input {
+}
+
+.checkbox-container input {
     margin-right: 0.5rem;
     margin-top: 0.2rem;
-  }
-  
-  .signup-button {
+}
+
+.signup-button {
     width: 100%;
     padding: 0.9rem;
     border: none;
@@ -90,45 +95,44 @@
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.3s ease;
-  }
-  
-  .signup-button:hover {
+}
+
+.signup-button:hover {
     background: linear-gradient(to right, #be1010, #B31547);
-  }
-  
-  .status-message {
+}
+
+.status-message {
     font-size: 0.9rem;
     margin-bottom: 1rem;
     text-align: center;
     padding: 0.5rem;
     border-radius: 8px;
-  }
-  
-  .status-message.error {
+}
+
+.status-message.error {
     background-color: #ffe0e0;
     color: #a30000;
     border: 1px solid #ff5a5a;
-  }
-  
-  .status-message.info {
+}
+
+.status-message.info {
     background-color: #fce8f1;
     color: #8b1e3f;
     border: 1px solid #d81159;
-  }
-  
-  #passwordSection {
+}
+
+#passwordSection {
     margin-top: 1rem;
     animation: fadeIn 0.5s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
+}
+
+@keyframes fadeIn {
     from {
-      opacity: 0;
-      transform: translateY(10px);
+        opacity: 0;
+        transform: translateY(10px);
     }
     to {
-      opacity: 1;
-      transform: translateY(0);
+        opacity: 1;
+        transform: translateY(0);
     }
-  }
-  
+}
