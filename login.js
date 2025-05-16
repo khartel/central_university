@@ -13,39 +13,23 @@ function togglePassword() {
     }
 }
 
-function validateInput(input, groupId) {
-    const group = document.getElementById(groupId);
-    if (input.value.trim() !== '') {
-        group.classList.add('valid');
-    } else {
-        group.classList.remove('valid');
-    }
-}
-
 function checkPassword(input) {
     const val = input.value;
     document.getElementById('rule1').classList.toggle('valid', val.length >= 8);
     document.getElementById('rule2').classList.toggle('valid', /[0-9\W]/.test(val));
     document.getElementById('rule3').classList.toggle('valid', /[a-z]/.test(val) && /[A-Z]/.test(val));
-    validateInput(input, 'password-group');
 }
 
 function autoCompleteEmail(input) {
     const value = input.value;
-    // Check if the input contains '@' and no domain is typed yet
     if (value.includes('@') && !value.includes('@central.edu.gh') && !value.substring(value.indexOf('@') + 1).includes('.')) {
         const username = value.substring(0, value.indexOf('@'));
         input.value = username + '@central.edu.gh';
-        // Move cursor to just before '@central.edu.gh'
         input.setSelectionRange(username.length, username.length);
-        validateInput(input, 'email-group');
-    } else {
-        validateInput(input, 'email-group');
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize form validation
     const emailInput = document.querySelector('input[type="email"]');
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.querySelector('.password-toggle');
@@ -53,8 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Pre-fill email from sessionStorage if available (after signup redirect)
     if (emailInput && sessionStorage.getItem('signup_email')) {
         emailInput.value = sessionStorage.getItem('signup_email');
-        validateInput(emailInput, 'email-group');
-        // Clear the stored email to prevent reuse after login
         sessionStorage.removeItem('signup_email');
     }
     

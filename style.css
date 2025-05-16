@@ -122,50 +122,41 @@ body {
 
 .form-group input {
   width: 100%;
-  padding: 14px 60px 14px 45px;
+  padding: 14px 40px 14px 35px; /* Reduced padding for icons */
   border-radius: 12px;
   border: 1px solid var(--input-border);
   font-size: 16px;
   background-color: var(--input-bg);
   color: var(--text-color);
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 1; /* Ensure input is clickable */
+  touch-action: manipulation; /* Improve touch responsiveness */
 }
 
 .form-group i:not(.password-toggle) {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  left: 15px;
+  left: 10px; /* Adjusted for better alignment */
   color: var(--secondary-text);
-  font-size: 20px;
+  font-size: 18px; /* Slightly smaller for less overlap */
+  pointer-events: none; /* Prevent email icon from intercepting clicks */
+  z-index: 0;
 }
 
 .password-toggle {
   position: absolute;
-  right: 35px;
+  right: 10px; /* Closer to edge */
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
   color: var(--secondary-text);
-  font-size: 20px;
+  font-size: 18px; /* Slightly smaller */
   z-index: 2;
   background: transparent;
   border: none;
-  padding: 5px;
-}
-
-.checkmark {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--success-color);
-  font-size: 20px;
-  display: none;
-}
-
-.form-group.valid .checkmark {
-  display: block;
+  padding: 2px; /* Minimal padding */
 }
 
 .password-rules {
@@ -311,7 +302,7 @@ body {
   }
 
   .form-group input {
-    padding: 12px 50px 12px 40px;
+    padding: 12px 35px 12px 30px; /* Adjusted for smaller screens */
   }
 
   .extra-options {
