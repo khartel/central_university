@@ -142,7 +142,7 @@ async function verifyPassword() {
     }
 
     try {
-        const response = await fetch('enroll.php', {
+        const response = await fetch('api/enroll.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

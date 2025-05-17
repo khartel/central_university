@@ -23,7 +23,7 @@ async function fetchLecturerData() {
 
 async function fetchLevels() {
     try {
-        const response = await fetch('students.php?action=levels', {
+        const response = await fetch('api/students.php?action=levels', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -45,7 +45,7 @@ async function fetchLevels() {
 
 async function fetchCourses() {
     try {
-        const response = await fetch('students.php?action=courses', {
+        const response = await fetch('api/students.php?action=courses', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -67,7 +67,7 @@ async function fetchCourses() {
 
 async function fetchStudentsByLevel(level) {
     try {
-        const response = await fetch(`students.php?action=students_by_level&level=${level}`, {
+        const response = await fetch(`api/students.php?action=students_by_level&level=${level}`, {
             credentials: 'include'
         });
         const data = await response.json();
@@ -88,7 +88,7 @@ async function fetchStudentsByLevel(level) {
 
 async function fetchStudentsByCourse(courseCode) {
     try {
-        const response = await fetch(`students.php?action=students_by_course&course_code=${courseCode}`, {
+        const response = await fetch(`api/students.php?action=students_by_course&course_code=${courseCode}`, {
             credentials: 'include'
         });
         const data = await response.json();

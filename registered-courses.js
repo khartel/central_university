@@ -98,7 +98,7 @@ async function verifyPassword() {
     }
 
     try {
-        const response = await fetch('drop.php', {
+        const response = await fetch('api/drop.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
