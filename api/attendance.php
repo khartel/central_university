@@ -345,6 +345,7 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
         'code' => $code
     ]);
 } elseif ($action === 'submit_attendance' && $_SESSION['role'] === 'student') {
+    // Handle student attendance submission with geolocation verification
     $data = json_decode(file_get_contents('php://input'), true);
     $code = isset($data['code']) ? strtoupper(trim($data['code'])) : '';
     $student_lat = isset($data['latitude']) ? $data['latitude'] : null;
@@ -359,7 +360,7 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
         exit;
     }
 
-    // Verify code and check geolocation
+    // Verify attendance code and get course details
     $stmt = $conn->prepare("
         SELECT course_code, latitude, longitude
         FROM attendance_codes
@@ -383,14 +384,14 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
     $code_longitude = $code_data['longitude'];
     $stmt->close();
 
-    // Geolocation check (within ~1000 meters)
+    // Check if student is within 1000 meters of the class location
     $distance = calculateDistance($student_lat, $student_lon, $code_latitude, $code_longitude);
     if ($distance > 1.0) { // 1.0 km = 1000 meters
         echo json_encode(['success' => false, 'message' => 'You are not at the correct location']);
         exit;
     }
 
-    // Verify student enrollment
+    // Verify student enrollment in the course
     $stmt = $conn->prepare("
         SELECT COUNT(*) as count
         FROM course_enrollments
@@ -406,7 +407,7 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
     }
     $stmt->close();
 
-    // Record attendance
+    // Record attendance as present
     $stmt = $conn->prepare("
         INSERT INTO attendance (user_id, course_code, attendance_date, status, latitude, longitude)
         VALUES (?, ?, CURDATE(), 'present', ?, ?)
@@ -416,7 +417,25 @@ if ($action === 'courses' && $_SESSION['role'] === 'lecturer') {
     $stmt->execute();
     $stmt->close();
 
-    echo json_encode(['success' => true, 'message' => 'Attendance recorded']);
+    // Fetch course name for notification
+    $stmt = $conn->prepare("
+        SELECT course_name
+        FROM courses
+        WHERE course_code = ?
+    ");
+    $stmt->bind_param("s", $course_code);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $course = $result->fetch_assoc();
+    $stmt->close();
+
+    // Return success with course details for notification
+    echo json_encode([
+        'success' => true,
+        'message' => 'Attendance recorded',
+        'course_code' => $course_code,
+        'course_name' => $course['course_name']
+    ]);
 } elseif ($action === 'download_report' && $_SESSION['role'] === 'lecturer') {
     $course_code = isset($_GET['course_code']) ? $_GET['course_code'] : '';
     $period = isset($_GET['period']) ? $_GET['period'] : '';

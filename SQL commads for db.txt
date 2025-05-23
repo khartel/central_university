@@ -100,3 +100,15 @@ CREATE TABLE IF NOT EXISTS attendance (
     FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
     UNIQUE (user_id, course_code, attendance_date)
 ) ENGINE=InnoDB;
+
+-- Create temp_notifications table 
+CREATE TABLE temp_notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    course_code VARCHAR(10) NOT NULL,
+    message TEXT NOT NULL,
+    created_at DATE NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (course_code) REFERENCES courses(course_code)
+);

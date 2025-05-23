@@ -309,9 +309,9 @@ body {
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 0.85rem 2rem; /* Increased padding for larger button */
+    padding: 0.85rem 2rem;
     cursor: pointer;
-    font-size: 1.1rem; /* Increased font size for larger appearance */
+    font-size: 1.1rem;
     font-weight: 500;
     transition: background 0.2s, transform 0.2s;
 }
@@ -613,6 +613,115 @@ body {
     color: var(--text-color);
 }
 
+/* Notification Popup Styles */
+.notification-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.notification-popup.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notification-popup-content {
+    background: var(--card-bg);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    padding: 2rem;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.notification-header {
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+    font-size: 1.3rem;
+}
+
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification-item {
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: background 0.2s;
+}
+
+.notification-item.missed {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.notification-item.attended {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.notification-item.upcoming {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.notification-item.attendance-marked {
+    background: rgba(255, 193, 7, 0.1); /* Yellow for attendance marked */
+}
+
+.notification-item:hover {
+    background: var(--hover-bg);
+}
+
+.notification-content strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.notification-content p {
+    margin: 0.25rem 0;
+    color: var(--secondary-text);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notification-content i {
+    color: var(--secondary-text);
+}
+
+.close-notification-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--secondary-text);
+    transition: color 0.2s;
+}
+
+.close-notification-btn:hover {
+    color: var(--text-color);
+}
+
 /* Courses Section (for Enroll and Registered Courses) */
 .courses-section {
     background: var(--card-bg);
@@ -692,9 +801,9 @@ body {
 
 #passwordInput {
     width: 100%;
-    max-width: 300px; /* Restrict width to prevent overflow */
-    margin: 1rem auto; /* Center the input horizontally */
-    display: block; /* Ensure it behaves as a block element for centering */
+    max-width: 300px;
+    margin: 1rem auto;
+    display: block;
     padding: 0.75rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: 8px;

@@ -1,5 +1,5 @@
 <?php
-include 'db.php';
+include '../db.php';
 session_start();
 
 // logout
@@ -145,62 +145,119 @@ if (!isset($_SESSION['admin_authenticated'])) {
     <?php exit;
 }
 
-// Add course
-$successMsg = $errorMsg = '';
-if (isset($_POST['add_course'])) {
-    $course_code = trim($_POST['course_code']);
-    $course_name = trim($_POST['course_name']);
-    $level = trim($_POST['level']);
-    $credit_hours = trim($_POST['credit_hours']);
+// Check if course_assignments table exists, create if not
+$checkTable = $conn->query("SHOW TABLES LIKE 'course_assignments'");
+if ($checkTable->num_rows == 0) {
+    $conn->query("CREATE TABLE course_assignments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        course_code VARCHAR(10) NOT NULL,
+        lecturer_id INT NOT NULL,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (course_code) REFERENCES courses(course_code) ON DELETE CASCADE,
+        FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_assignment (course_code, lecturer_id)
+    )");
+}
 
-    // Basic validation
-    if (empty($course_code)) {
-        $errorMsg = "Course code cannot be empty";
-    } elseif (empty($course_name)) {
-        $errorMsg = "Course name cannot be empty";
+// Handle course assignment
+$successMsg = $errorMsg = '';
+if (isset($_POST['assign_course'])) {
+    $course_code = trim($_POST['course_code']);
+    $lecturer_id = trim($_POST['lecturer_id']);
+    
+    if (empty($course_code) || empty($lecturer_id)) {
+        $errorMsg = "Please select both course and lecturer";
     } else {
-        $stmt = $conn->prepare("INSERT INTO courses (course_code, course_name, level, credit_hours) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("sssi", $course_code, $course_name, $level, $credit_hours);
-        if ($stmt->execute()) {
-            $successMsg = "Course <b>$course_code - $course_name</b> added successfully.";
+        // Check if assignment already exists
+        $check = $conn->prepare("SELECT id FROM course_assignments WHERE course_code = ? AND lecturer_id = ?");
+        $check->bind_param("si", $course_code, $lecturer_id);
+        $check->execute();
+        $check->store_result();
+        
+        if ($check->num_rows > 0) {
+            $errorMsg = "This course is already assigned to the selected lecturer";
         } else {
-            $errorMsg = "Error: " . $stmt->error;
+            $stmt = $conn->prepare("INSERT INTO course_assignments (course_code, lecturer_id) VALUES (?, ?)");
+            $stmt->bind_param("si", $course_code, $lecturer_id);
+            if ($stmt->execute()) {
+                $successMsg = "Course assigned successfully";
+            } else {
+                $errorMsg = "Error: " . $stmt->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
+        $check->close();
     }
 }
 
-// Stats
-$totalCourses = $conn->query("SELECT COUNT(*) as count FROM courses")->fetch_assoc()['count'];
-$totalLevel100 = $conn->query("SELECT COUNT(*) as count FROM courses WHERE level='100'")->fetch_assoc()['count'];
-$totalLevel200 = $conn->query("SELECT COUNT(*) as count FROM courses WHERE level='200'")->fetch_assoc()['count'];
-$totalLevel300 = $conn->query("SELECT COUNT(*) as count FROM courses WHERE level='300'")->fetch_assoc()['count'];
-$totalLevel400 = $conn->query("SELECT COUNT(*) as count FROM courses WHERE level='400'")->fetch_assoc()['count'];
+// Handle course unassignment
+if (isset($_GET['unassign'])) {
+    $assignment_id = (int)$_GET['unassign'];
+    $stmt = $conn->prepare("DELETE FROM course_assignments WHERE id = ?");
+    $stmt->bind_param("i", $assignment_id);
+    if ($stmt->execute()) {
+        $successMsg = "Assignment removed successfully";
+    } else {
+        $errorMsg = "Error: " . $stmt->error;
+    }
+    $stmt->close();
+    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    exit;
+}
 
-// Search & Filter
+// Get all lecturers
+$lecturers = $conn->query("SELECT id, full_name, email FROM users WHERE role = 'lecturer' ORDER BY full_name ASC")->fetch_all(MYSQLI_ASSOC);
+
+// Get all courses
+$courses = $conn->query("SELECT course_code, course_name, level FROM courses ORDER BY course_code ASC")->fetch_all(MYSQLI_ASSOC);
+
+// Get current assignments with lecturer and course details
+$assignments = $conn->query("
+    SELECT ca.id, ca.course_code, c.course_name, ca.lecturer_id, u.full_name as lecturer_name, u.email as lecturer_email
+    FROM course_assignments ca
+    JOIN courses c ON ca.course_code = c.course_code
+    JOIN users u ON ca.lecturer_id = u.id
+    ORDER BY c.course_code ASC
+")->fetch_all(MYSQLI_ASSOC);
+
+// Search and filter
 $search = isset($_GET['search']) ? strtolower(trim($_GET['search'])) : '';
 $filterLevel = isset($_GET['level']) ? $_GET['level'] : '';
-$query = "SELECT course_code, course_name, level, credit_hours FROM courses";
-$conditions = [];
 
+$query = "
+    SELECT c.course_code, c.course_name, c.level, 
+           GROUP_CONCAT(u.full_name ORDER BY u.full_name SEPARATOR ', ') as assigned_lecturers
+    FROM courses c
+    LEFT JOIN course_assignments ca ON c.course_code = ca.course_code
+    LEFT JOIN users u ON ca.lecturer_id = u.id
+";
+
+$conditions = [];
 if (!empty($filterLevel)) {
-    $conditions[] = "level = '" . $conn->real_escape_string($filterLevel) . "'";
+    $conditions[] = "c.level = '" . $conn->real_escape_string($filterLevel) . "'";
 }
 if (!empty($search)) {
     $searchEscaped = $conn->real_escape_string($search);
-    $conditions[] = "(LOWER(course_code) LIKE '%$searchEscaped%' OR LOWER(course_name) LIKE '%$searchEscaped%')";
+    $conditions[] = "(LOWER(c.course_code) LIKE '%$searchEscaped%' OR LOWER(c.course_name) LIKE '%$searchEscaped%')";
 }
+
 if ($conditions) {
     $query .= " WHERE " . implode(" AND ", $conditions);
 }
-$query .= " ORDER BY course_code ASC";
-$courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
+
+$query .= " GROUP BY c.course_code ORDER BY c.course_code ASC";
+$courseAssignments = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
+
+// Stats
+$totalCourses = $conn->query("SELECT COUNT(*) as count FROM courses")->fetch_assoc()['count'];
+$totalAssigned = $conn->query("SELECT COUNT(DISTINCT course_code) as count FROM course_assignments")->fetch_assoc()['count'];
+$totalLecturers = $conn->query("SELECT COUNT(*) as count FROM users WHERE role='lecturer'")->fetch_assoc()['count'];
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin - Course Management</title>
+    <title>Admin - Course Assignment</title>
     <link rel="shortcut icon" href="pics/cu-logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -343,20 +400,12 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             color: var(--primary);
         }
         
-        .stat-icon.level100 {
-            color: #4cc9f0;
+        .stat-icon.assigned {
+            color: var(--success);
         }
         
-        .stat-icon.level200 {
-            color: #4895ef;
-        }
-        
-        .stat-icon.level300 {
-            color: #4361ee;
-        }
-        
-        .stat-icon.level400 {
-            color: #3f37c9;
+        .stat-icon.lecturers {
+            color: var(--secondary);
         }
         
         .stat-label {
@@ -439,6 +488,15 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             background-color: var(--primary-dark);
         }
         
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c1121f;
+        }
+        
         /* Filter Section */
         .filter-section {
             display: flex;
@@ -503,6 +561,33 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             background-color: rgba(67, 97, 238, 0.05);
         }
         
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 50rem;
+        }
+        
+        .badge-primary {
+            color: #fff;
+            background-color: var(--primary);
+        }
+        
+        .badge-success {
+            color: #fff;
+            background-color: var(--success);
+        }
+        
+        .badge-warning {
+            color: #000;
+            background-color: var(--warning);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header-container, .container {
@@ -556,60 +641,91 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                 <p class="stat-value"><?php echo $totalCourses; ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-layer-group stat-icon level100"></i>
-                <p class="stat-label">Level 100</p>
-                <p class="stat-value"><?php echo $totalLevel100; ?></p>
+                <i class="fas fa-check-circle stat-icon assigned"></i>
+                <p class="stat-label">Assigned Courses</p>
+                <p class="stat-value"><?php echo $totalAssigned; ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-layer-group stat-icon level200"></i>
-                <p class="stat-label">Level 200</p>
-                <p class="stat-value"><?php echo $totalLevel200; ?></p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-layer-group stat-icon level300"></i>
-                <p class="stat-label">Level 300</p>
-                <p class="stat-value"><?php echo $totalLevel300; ?></p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-layer-group stat-icon level400"></i>
-                <p class="stat-label">Level 400</p>
-                <p class="stat-value"><?php echo $totalLevel400; ?></p>
+                <i class="fas fa-chalkboard-teacher stat-icon lecturers"></i>
+                <p class="stat-label">Lecturers</p>
+                <p class="stat-value"><?php echo $totalLecturers; ?></p>
             </div>
         </div>
 
-        <!-- Add Course Form -->
+        <!-- Assign Course Form -->
         <div class="card">
-            <h2 class="card-title">Add New Course</h2>
+            <h2 class="card-title">Assign Course to Lecturer</h2>
             <form method="POST">
-                <input type="hidden" name="add_course" value="1">
+                <input type="hidden" name="assign_course" value="1">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Course Code</label>
-                        <input type="text" name="course_code" class="form-control" required 
-                               placeholder="e.g., CSC101 or ABCD1234">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Course Name</label>
-                        <input type="text" name="course_name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Level</label>
-                        <select name="level" class="form-control" required>
-                            <option value="100">Level 100</option>
-                            <option value="200">Level 200</option>
-                            <option value="300">Level 300</option>
-                            <option value="400">Level 400</option>
+                        <label class="form-label">Select Course</label>
+                        <select name="course_code" class="form-control" required>
+                            <option value="">-- Select Course --</option>
+                            <?php foreach ($courses as $course): ?>
+                                <option value="<?php echo htmlspecialchars($course['course_code']); ?>">
+                                    <?php echo htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Credit Hours</label>
-                        <input type="number" name="credit_hours" class="form-control" required min="1" max="10">
+                        <label class="form-label">Select Lecturer</label>
+                        <select name="lecturer_id" class="form-control" required>
+                            <option value="">-- Select Lecturer --</option>
+                            <?php foreach ($lecturers as $lecturer): ?>
+                                <option value="<?php echo htmlspecialchars($lecturer['id']); ?>">
+                                    <?php echo htmlspecialchars($lecturer['full_name'] . ' (' . $lecturer['email'] . ')'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group" style="text-align: right; margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">Add Course</button>
+                    <button type="submit" class="btn btn-primary">Assign Course</button>
                 </div>
             </form>
+        </div>
+
+        <!-- Current Assignments -->
+        <div class="card">
+            <h2 class="card-title">Current Assignments</h2>
+            <?php if (!empty($assignments)): ?>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Course</th>
+                                <th>Lecturer</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($assignments as $assignment): ?>
+                                <tr>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars($assignment['course_code']); ?></strong><br>
+                                        <?php echo htmlspecialchars($assignment['course_name']); ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($assignment['lecturer_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($assignment['lecturer_email']); ?></td>
+                                    <td>
+                                        <a href="?unassign=<?php echo $assignment['id']; ?>" class="btn btn-danger" 
+                                           onclick="return confirm('Are you sure you want to unassign this course?')">
+                                            <i class="fas fa-times"></i> Unassign
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p style="text-align: center; padding: 1.5rem; color: var(--gray);">
+                    No course assignments found.
+                </p>
+            <?php endif; ?>
         </div>
 
         <!-- Search + Filter -->
@@ -631,13 +747,13 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             </div>
             <div class="filter-group">
                 <button type="submit" class="btn btn-primary">Apply</button>
-                <a href="admin_addcourses.php" class="btn" style="margin-left: 10px;">Reset</a>
+                <a href="admin_assigncourse.php" class="btn" style="margin-left: 10px;">Reset</a>
             </div>
         </form>
 
         <!-- Courses Table -->
         <div class="table-container">
-            <div class="table-header">Course List</div>
+            <div class="table-header">All Courses</div>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -645,17 +761,25 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                             <th>Course Code</th>
                             <th>Course Name</th>
                             <th>Level</th>
-                            <th>Credit Hours</th>
+                            <th>Assigned Lecturers</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($courses)): ?>
-                            <?php foreach ($courses as $course): ?>
+                        <?php if (!empty($courseAssignments)): ?>
+                            <?php foreach ($courseAssignments as $course): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($course['course_code']); ?></td>
                                     <td><?php echo htmlspecialchars($course['course_name']); ?></td>
-                                    <td>Level <?php echo htmlspecialchars($course['level']); ?></td>
-                                    <td><?php echo htmlspecialchars($course['credit_hours']); ?></td>
+                                    <td>
+                                        <span class="badge badge-primary">Level <?php echo htmlspecialchars($course['level']); ?></span>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($course['assigned_lecturers'])): ?>
+                                            <span class="badge badge-success"><?php echo htmlspecialchars($course['assigned_lecturers']); ?></span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">Not assigned</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -670,14 +794,5 @@ $courses = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
             </div>
         </div>
     </main>
-
-    <script>
-        // Validate credit hours input
-        document.querySelector('input[name="credit_hours"]').addEventListener('change', function() {
-            const value = parseInt(this.value);
-            if (value < 1) this.value = 1;
-            if (value > 10) this.value = 10;
-        });
-    </script>
 </body>
 </html>
